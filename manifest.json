@@ -1,8 +1,8 @@
 {
   "name": "SHEIN",
   "short_name": "SHEIN",
-  "description": "SHEIN instalable como app web para iPhone y Android.",
-  "start_url": "./index.html",
+  "description": "SHEIN instalable como app web para iPhone y Android. Version v93-20260506-actualizable.",
+  "start_url": "./index.html?v=v93-20260506-actualizable",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",

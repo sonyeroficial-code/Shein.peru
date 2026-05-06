@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="app-version" content="v93-20260506-actualizable" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>SHEIN</title>
   <!-- PWA app web: iPhone + Android - v70 sin zoom -->
   <meta name="theme-color" content="#08080a" />
@@ -10,7 +14,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="SHEIN" />
-  <link rel="manifest" href="manifest.json?v=92" />
+  <link rel="manifest" href="manifest.json?v=v93-20260506-actualizable" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
   <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
@@ -10368,21 +10372,31 @@
       window.toastTimer = setTimeout(() => toast.classList.remove("show"), 1800);
     }
 
+    const APP_UPDATE_VERSION_V93 = 'v93-20260506-actualizable';
+
     async function forceAppUpdateV92(){
       try{
         showToast('Actualizando app...');
         if('serviceWorker' in navigator){
           const regs = await navigator.serviceWorker.getRegistrations();
-          await Promise.all(regs.map(reg => reg.unregister()));
+          for (const reg of regs){
+            try{
+              if (reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
+              if (reg.active) reg.active.postMessage({type:'CLEAR_CACHE'});
+              await reg.update().catch(function(){});
+              await reg.unregister();
+            }catch(err){}
+          }
         }
         if(window.caches){
           const keys = await caches.keys();
           await Promise.all(keys.map(key => caches.delete(key)));
         }
+        sessionStorage.removeItem('pwa_refreshed_' + APP_UPDATE_VERSION_V93);
       }catch(e){
-        console.warn('No se pudo limpiar toda la caché', e);
+        console.warn('No se pudo limpiar toda la cache', e);
       }
-      const cleanUrl = location.origin + location.pathname + '?update=' + Date.now();
+      const cleanUrl = location.origin + location.pathname + '?v=' + encodeURIComponent(APP_UPDATE_VERSION_V93) + '&update=' + Date.now();
       location.replace(cleanUrl);
     }
     window.forceAppUpdateV92 = forceAppUpdateV92;
@@ -14503,8 +14517,33 @@
       }
 
       if ('serviceWorker' in navigator){
+        var refreshingV93 = false;
+        navigator.serviceWorker.addEventListener('controllerchange', function(){
+          if (refreshingV93) return;
+          refreshingV93 = true;
+          var key = 'pwa_refreshed_' + APP_UPDATE_VERSION_V93;
+          if (sessionStorage.getItem(key) !== '1'){
+            sessionStorage.setItem(key, '1');
+            window.location.reload();
+          }
+        });
         window.addEventListener('load', function(){
-          navigator.serviceWorker.register('./service-worker.js').catch(function(){});
+          var swUrl = './service-worker.js?v=' + encodeURIComponent(APP_UPDATE_VERSION_V93);
+          navigator.serviceWorker.register(swUrl, {updateViaCache:'none'}).then(function(reg){
+            reg.update().catch(function(){});
+            if (reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
+            reg.addEventListener('updatefound', function(){
+              var worker = reg.installing;
+              if (!worker) return;
+              worker.addEventListener('statechange', function(){
+                if (worker.state === 'installed' && navigator.serviceWorker.controller){
+                  worker.postMessage({type:'SKIP_WAITING'});
+                }
+              });
+            });
+          }).catch(function(err){
+            console.warn('No se pudo registrar el service worker', err);
+          });
         });
       }
 
