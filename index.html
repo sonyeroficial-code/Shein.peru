@@ -6425,6 +6425,111 @@
     }
 
 
+
+    /* v91: arreglo visual de recarga personalizada */
+    #screen-recarga .recharge-amount-grid-v41{
+      align-items:stretch;
+    }
+    #screen-recarga .recharge-custom-card-v71{
+      grid-column:1 / -1;
+      display:grid;
+      gap:9px;
+      padding:12px;
+      border-radius:18px;
+      background:var(--card-soft);
+      border:1px solid var(--line);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+      margin-top:0;
+      min-width:0;
+    }
+    #screen-recarga .recharge-custom-card-v71 label{
+      display:block;
+      color:var(--text);
+      font-size:12.5px;
+      line-height:1.2;
+      font-weight:950;
+      letter-spacing:-.01em;
+    }
+    #screen-recarga .recharge-custom-row-v71{
+      display:grid;
+      grid-template-columns:auto minmax(0,1fr) auto;
+      gap:8px;
+      align-items:center;
+    }
+    #screen-recarga .recharge-custom-row-v71 span{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-width:34px;
+      height:42px;
+      border-radius:13px;
+      background:var(--surface);
+      border:1px solid var(--line);
+      color:var(--text);
+      font-size:15px;
+      font-weight:950;
+      line-height:1;
+      white-space:nowrap;
+    }
+    #screen-recarga .recharge-custom-row-v71 input{
+      width:100%;
+      min-width:0;
+      height:42px;
+      border:none;
+      outline:none;
+      border-radius:13px;
+      padding:0 11px;
+      background:var(--surface);
+      border:1px solid var(--line);
+      color:var(--text);
+      font-size:15px;
+      font-weight:850;
+      box-shadow:none;
+      appearance:textfield;
+      -moz-appearance:textfield;
+    }
+    #screen-recarga .recharge-custom-row-v71 input::-webkit-outer-spin-button,
+    #screen-recarga .recharge-custom-row-v71 input::-webkit-inner-spin-button{
+      -webkit-appearance:none;
+      margin:0;
+    }
+    #screen-recarga .recharge-custom-row-v71 input:focus{
+      border-color:color-mix(in srgb, var(--accent2) 30%, var(--line));
+      box-shadow:0 0 0 3px color-mix(in srgb, var(--accent2) 10%, transparent);
+    }
+    #screen-recarga .recharge-custom-row-v71 button{
+      height:42px;
+      min-width:64px;
+      border:none;
+      border-radius:13px;
+      padding:0 12px;
+      background:linear-gradient(135deg,var(--accent1),var(--accent2));
+      color:#061411;
+      font-size:12.5px;
+      font-weight:950;
+      cursor:pointer;
+      box-shadow:0 8px 14px rgba(16,210,111,.12);
+    }
+    #screen-recarga .recharge-custom-help-v71{
+      padding:9px 10px;
+      border-radius:14px;
+      background:color-mix(in srgb, var(--accent1) 7%, var(--surface));
+      border:1px solid color-mix(in srgb, var(--accent1) 12%, var(--line));
+      color:var(--muted);
+      font-size:11.5px;
+      line-height:1.35;
+    }
+    @media(max-width:380px){
+      #screen-recarga .recharge-custom-row-v71{
+        grid-template-columns:auto minmax(0,1fr);
+      }
+      #screen-recarga .recharge-custom-row-v71 button{
+        grid-column:1 / -1;
+        width:100%;
+      }
+    }
+
+
     /* v44: Firebase + panel admin seguro */
     .admin-entry-panel{display:none;}
     .admin-entry-panel.show{display:block;}
@@ -10901,7 +11006,7 @@
       const next = {...base,...data,mode,baseRecharge:Math.max(1,Number(data.baseRecharge ?? base.baseRecharge)||base.baseRecharge),rechargeStep:Math.max(0,Number(data.rechargeStep ?? base.rechargeStep)||base.rechargeStep),baseGain:Math.max(1,Number(data.baseGain ?? base.baseGain)||base.baseGain),gainStep:Math.max(0,Number(data.gainStep ?? base.gainStep)||base.gainStep),taskCount:Math.max(1,Math.min(20,Math.floor(Number(data.taskCount ?? base.taskCount)||base.taskCount))),active:data.active !== false};
       if(data.plans && typeof data.plans === 'object'){
         const plans = {};
-        Object.keys(data.plans).forEach(key => { const item = data.plans[key] || {}; const level = Math.max(1,Math.floor(Number(item.level || item.vip || String(key).replace(/[^0-9]/g,'') || 1))); plans[level] = {level,name:item.name || ('VIP'+level),recharge:Number(item.recharge ?? item.rechargeRequired ?? 0) || 0,gain:Number(item.gain ?? item.rewardTotal ?? 0) || 0,taskCount:Number(item.taskCount || next.taskCount || 5) || 5,active:item.active !== false}; });
+        Object.keys(data.plans).forEach(key => { const item = data.plans[key] || {}; const level = Math.max(1,Math.floor(Number(item.level || item.vip || String(key).replace(/[^0-9]/g,'') || 1))); plans[level] = {level,name:item.name || ('VIP'+level),recharge:Number(item.recharge ?? item.rechargeRequired ?? 0) || 0,gain:Number(item.gain ?? item.rewardTotal ?? 0) || 0,taskCount:Number(item.taskCount || next.taskCount || 5) || 5,taskPrices:Array.isArray(item.taskPrices)?item.taskPrices.map(Number).filter(n=>Number.isFinite(n)&&n>0):[],active:item.active !== false}; });
         next.plans = plans;
       } else next.plans = null;
       return next;
@@ -13461,10 +13566,10 @@
     function normalizeBridgeVipSettingsV62(data){return window.normalizeVipSettingsV62 ? window.normalizeVipSettingsV62(data) : (data || {});}
     let activeUserVipOverrideV63 = null;
     function applyBridgeVipSettingsV62(settings){ if(window.applyVipSettingsV62) window.applyVipSettingsV62(activeUserVipOverrideV63 || settings,true); }
-    function collectVipPlansFromSnapshotV62(snap){const plans={}; snap.forEach(d=>{const data=d.data()||{}; const level=Math.max(1,Math.floor(Number(data.level||String(d.id).replace(/[^0-9]/g,'')||1))); plans[level]={level,name:data.name||('VIP'+level),recharge:Number(data.rechargeRequired??data.recharge??0)||0,gain:Number(data.rewardTotal??data.gain??0)||0,taskCount:Number(data.taskCount||5)||5,active:data.active!==false};}); return plans;}
+    function collectVipPlansFromSnapshotV62(snap){const plans={}; snap.forEach(d=>{const data=d.data()||{}; const level=Math.max(1,Math.floor(Number(data.level||String(d.id).replace(/[^0-9]/g,'')||1))); plans[level]={level,name:data.name||('VIP'+level),recharge:Number(data.rechargeRequired??data.recharge??0)||0,gain:Number(data.rewardTotal??data.gain??0)||0,taskCount:Number(data.taskCount||5)||5,taskPrices:Array.isArray(data.taskPrices)?data.taskPrices.map(Number).filter(n=>Number.isFinite(n)&&n>0):[],active:data.active!==false};}); return plans;}
     function startVipSettingsRealtime(){ if(!enabled||!db)return; if(!vipSettingsRealtimeUnsub){vipSettingsRealtimeUnsub=onSnapshot(doc(db,'appConfig','vipSettings'),snap=>{if(snap.exists())applyBridgeVipSettingsV62(snap.data());},error=>console.warn('No se pudo escuchar appConfig/vipSettings',error));} if(!vipPlansRealtimeUnsub){vipPlansRealtimeUnsub=onSnapshot(collection(db,'vipPlans'),snap=>{const current=window.getVipSettingsV62?window.getVipSettingsV62():{}; const plans=collectVipPlansFromSnapshotV62(snap); if(Object.keys(plans).length)applyBridgeVipSettingsV62({...current,plans});},error=>console.warn('No se pudo escuchar vipPlans',error));} }
     async function loadVipSettings(){ if(!enabled||!db) return window.getVipSettingsV62?window.getVipSettingsV62():{}; let settings=window.getVipSettingsV62?window.getVipSettingsV62():{}; try{const snap=await getDoc(doc(db,'appConfig','vipSettings')); if(snap.exists()) settings={...settings,...snap.data()};}catch(error){console.warn('No se pudo leer appConfig/vipSettings',error);} try{const plansSnap=await getDocs(collection(db,'vipPlans')); const plans=collectVipPlansFromSnapshotV62(plansSnap); if(Object.keys(plans).length) settings={...settings,plans};}catch(error){console.warn('No se pudo leer vipPlans',error);} settings=normalizeBridgeVipSettingsV62(settings); applyBridgeVipSettingsV62(settings); return settings;}
-    async function adminSaveVipSettings(settings){ if(!enabled||!isAdmin()) throw new Error('No admin'); const clean=normalizeBridgeVipSettingsV62(settings); const basePayload={mode:clean.mode||'linear',baseRecharge:Number(clean.baseRecharge||10),rechargeStep:Number(clean.rechargeStep||10),baseGain:Number(clean.baseGain||5),gainStep:Number(clean.gainStep||5),taskCount:Number(clean.taskCount||5),active:clean.active!==false,updatedBy:currentUser.uid,updatedByEmail:currentUser.email||'',updatedAt:serverTimestamp()}; await setDoc(doc(db,'appConfig','vipSettings'),basePayload,{merge:true}); const docs=[]; for(let i=1;i<=20;i++){const plan=window.buildVipPlanForSettingsV62?window.buildVipPlanForSettingsV62(clean,i):{recharge:i*10,gain:i*5,taskCount:5}; docs.push(setDoc(doc(db,'vipPlans','vip'+i),{level:i,name:'VIP'+i,rechargeRequired:Number(plan.recharge||0),rewardTotal:Number(plan.gain||0),taskCount:Number(plan.taskCount||clean.taskCount||5),rewardPerTask:Number((Number(plan.gain||0)/Math.max(1,Number(plan.taskCount||clean.taskCount||5))).toFixed(2)),active:true,updatedAt:serverTimestamp(),updatedBy:currentUser.uid},{merge:true}));} await Promise.all(docs); await addDoc(collection(db,'adminLogs'),{adminId:currentUser.uid,adminEmail:currentUser.email||'',action:'update_vip_plans',targetUser:'all',amount:0,note:'Planes VIP actualizados desde panel admin',createdAt:serverTimestamp()}); applyBridgeVipSettingsV62(clean); return clean;}
+    async function adminSaveVipSettings(settings){ if(!enabled||!isAdmin()) throw new Error('No admin'); const clean=normalizeBridgeVipSettingsV62(settings); const basePayload={mode:clean.mode||'linear',baseRecharge:Number(clean.baseRecharge||10),rechargeStep:Number(clean.rechargeStep||10),baseGain:Number(clean.baseGain||5),gainStep:Number(clean.gainStep||5),taskCount:Number(clean.taskCount||5),taskPricesByVip:clean.taskPricesByVip||{},active:clean.active!==false,updatedBy:currentUser.uid,updatedByEmail:currentUser.email||'',updatedAt:serverTimestamp()}; await setDoc(doc(db,'appConfig','vipSettings'),basePayload,{merge:true}); const docs=[]; for(let i=1;i<=20;i++){const plan=window.buildVipPlanForSettingsV62?window.buildVipPlanForSettingsV62(clean,i):{recharge:i*10,gain:i*5,taskCount:5}; docs.push(setDoc(doc(db,'vipPlans','vip'+i),{level:i,name:'VIP'+i,rechargeRequired:Number(plan.recharge||0),rewardTotal:Number(plan.gain||0),taskCount:Number(plan.taskCount||clean.taskCount||5),rewardPerTask:Number((Number(plan.gain||0)/Math.max(1,Number(plan.taskCount||clean.taskCount||5))).toFixed(2)),taskPrices:Array.isArray(plan.taskPrices)?plan.taskPrices:[],active:true,updatedAt:serverTimestamp(),updatedBy:currentUser.uid},{merge:true}));} await Promise.all(docs); await addDoc(collection(db,'adminLogs'),{adminId:currentUser.uid,adminEmail:currentUser.email||'',action:'update_vip_plans',targetUser:'all',amount:0,note:'Planes VIP actualizados desde panel admin',createdAt:serverTimestamp()}); applyBridgeVipSettingsV62(clean); return clean;}
 
     async function adminSaveUserVipSettings(uid, settings){
       if(!enabled||!isAdmin()) throw new Error('No admin');
@@ -13472,7 +13577,7 @@
       const target=String(uid||'').trim();
       if(!target) throw new Error('UID invalido');
       const payload={
-        vipSettingsOverride:{mode:clean.mode||'linear',baseRecharge:Number(clean.baseRecharge||10),rechargeStep:Number(clean.rechargeStep||10),baseGain:Number(clean.baseGain||5),gainStep:Number(clean.gainStep||5),taskCount:Number(clean.taskCount||5),active:true,updatedBy:currentUser.uid,updatedByEmail:currentUser.email||'',updatedAt:serverTimestamp()},
+        vipSettingsOverride:{mode:clean.mode||'linear',baseRecharge:Number(clean.baseRecharge||10),rechargeStep:Number(clean.rechargeStep||10),baseGain:Number(clean.baseGain||5),gainStep:Number(clean.gainStep||5),taskCount:Number(clean.taskCount||5),taskPricesByVip:clean.taskPricesByVip||{},active:true,updatedBy:currentUser.uid,updatedByEmail:currentUser.email||'',updatedAt:serverTimestamp()},
         vipSettingsMode:'custom',
         updatedAt:serverTimestamp()
       };
@@ -14097,6 +14202,43 @@
       });
     }
 
+
+    async function adminResetUserZero(uid){
+      if(!enabled||!isAdmin()) throw new Error('No admin');
+      const target=String(uid||'').trim();
+      if(!target) throw new Error('UID invalido');
+      await setDoc(doc(db,'users',target),{
+        uid:target,
+        userId:target,
+        wallet:0,
+        withdrawable:0,
+        frozen:0,
+        totalRecharged:0,
+        totalWithdrawn:0,
+        vipLevel:1,
+        cycle:1,
+        completed:0,
+        rewardToday:0,
+        bestCycle:1,
+        bestCompleted:0,
+        currentIndex:0,
+        cycleClosed:false,
+        blocked:false,
+        status:'active',
+        lastAdminResetAt:serverTimestamp(),
+        updatedAt:serverTimestamp()
+      },{merge:true});
+      await addDoc(collection(db,'adminLogs'),{
+        adminId:currentUser.uid,
+        adminEmail:currentUser.email||'',
+        action:'reset_user_zero',
+        targetUser:target,
+        amount:0,
+        note:'Usuario reseteado desde cero por admin',
+        createdAt:serverTimestamp()
+      });
+    }
+
     async function adminDeleteUser(uid){
       if (!enabled || !isAdmin()) throw new Error('No admin');
       if (!uid) throw new Error('UID inválido');
@@ -14130,6 +14272,7 @@
       adminAdjustBalance,
       adminAdjust,
       adminBlockUser,
+      adminResetUserZero,
       adminDeleteUser,
       startUserRealtime,
       stopUserRealtime,
@@ -14734,5 +14877,535 @@
   };
 })();
 </script>
+
+<!-- FIX_VIP_TAREAS_DINAMICAS_V72_START -->
+<script>
+/* v72: Panel VIP entendible + tareas automaticas por nivel */
+(function(){
+  function moneyV72(n){
+    try { return money(Number(n || 0)); }
+    catch(e){ return 'S/ ' + Number(n || 0).toFixed(2); }
+  }
+  function numV72(value, fallback){
+    var n = Number(String(value == null ? fallback : value).replace(',', '.'));
+    return Number.isFinite(n) ? n : fallback;
+  }
+  function vipLevelV72(level){
+    return Math.max(1, Math.floor(numV72(level, 1)));
+  }
+  function tasksForVipV72(level){
+    var vip = vipLevelV72(level);
+    if(vip === 1) return 5;
+    if(vip === 2) return 8;
+    if(vip === 3) return 10;
+    if(vip === 4) return 12;
+    if(vip === 5) return 14;
+    if(vip === 6) return 16;
+    return Math.min(24, 16 + ((vip - 6) * 2));
+  }
+  window.tasksForVipV72 = tasksForVipV72;
+  window.getTaskCountForVip = tasksForVipV72;
+
+  var originalBuildVipPlanV72 = window.buildVipPlanForSettingsV62;
+  if(typeof originalBuildVipPlanV72 === 'function'){
+    window.buildVipPlanForSettingsV62 = function(settings, cycle){
+      var vip = vipLevelV72(cycle);
+      var plan = originalBuildVipPlanV72(settings, vip) || {};
+      var tasks = tasksForVipV72(vip);
+      var gain = Number(plan.gain || plan.rewardTotal || 0);
+      plan.taskCount = tasks;
+      plan.rewardPerTask = Number((gain / Math.max(1, tasks)).toFixed(2));
+      return plan;
+    };
+  }
+
+  function settingsV72(s){
+    try {
+      return normalizeVipSettingsV62(s || (window.adminCache && adminCache.vipSettings) || (window.getVipSettingsV62 && window.getVipSettingsV62()) || window.vipSettingsV62);
+    } catch(e){
+      return {mode:'linear',baseRecharge:10,rechargeStep:10,baseGain:5,gainStep:5,taskCount:5,active:true,plans:null};
+    }
+  }
+  function planAtV72(s, level){
+    s = settingsV72(s);
+    var vip = vipLevelV72(level);
+    var plan = null;
+    try { plan = window.buildVipPlanForSettingsV62 ? window.buildVipPlanForSettingsV62(s, vip) : null; } catch(e){}
+    if(!plan){
+      if(s.mode === 'double') plan = {recharge:Number(s.baseRecharge || 20) * Math.pow(2, vip - 1), gain:Number(s.baseGain || 10) * Math.pow(2, vip - 1)};
+      else plan = {recharge:Number(s.baseRecharge || 10) + (vip - 1) * Number(s.rechargeStep || 10), gain:Number(s.baseGain || 5) + (vip - 1) * Number(s.gainStep || 5)};
+    }
+    plan.badge = plan.badge || ('VIP' + vip);
+    plan.taskCount = tasksForVipV72(vip);
+    return plan;
+  }
+  function kindTextV72(s){
+    s = settingsV72(s);
+    if(s.mode === 'linear' && Number(s.baseRecharge) === 10 && Number(s.rechargeStep) === 10 && Number(s.baseGain) === 5 && Number(s.gainStep) === 5) return 'Plan bajo';
+    if(s.mode === 'double' && Number(s.baseRecharge) === 20 && Number(s.baseGain) === 10) return 'Plan anterior';
+    return 'Plan personalizado';
+  }
+  function planSummaryV72(s){
+    var p1 = planAtV72(s,1), p2 = planAtV72(s,2), p3 = planAtV72(s,3);
+    return 'VIP1 ' + moneyV72(p1.recharge) + ' · ' + p1.taskCount + ' tareas · VIP2 ' + moneyV72(p2.recharge) + ' · ' + p2.taskCount + ' tareas · VIP3 ' + moneyV72(p3.recharge) + ' · ' + p3.taskCount + ' tareas';
+  }
+  function previewV72(s){
+    s = settingsV72(s);
+    return Array.from({length:6}, function(_, i){
+      var vip = i + 1;
+      var p = planAtV72(s, vip);
+      return '<div class="admin-plan-preview-item-v62 v63 v64"><span>VIP' + vip + '</span><strong>' + moneyV72(p.recharge) + ' · gana ' + moneyV72(p.gain) + ' · ' + p.taskCount + ' tareas</strong></div>';
+    }).join('');
+  }
+  function specialUsersV72(){
+    try { return (window.adminCache && Array.isArray(adminCache.users) ? adminCache.users : []).filter(function(u){ var s = u.vipSettingsOverride || u.customVipSettings; return s && s.active !== false; }); }
+    catch(e){ return []; }
+  }
+  function specialSummaryV72(){
+    var users = specialUsersV72();
+    return '<div class="admin-vip-special-summary-v67"><div class="count">' + users.length + '</div><div><strong>Usuarios con plan especial</strong><span>Solo aqui aparecen clientes con precio individual activo.</span></div><b>' + users.length + ' activos</b></div>';
+  }
+  function specialListV72(){
+    var users = specialUsersV72();
+    if(!users.length){
+      return '<div class="admin-special-list-v66"><h4>Lista de planes especiales <span>0</span></h4><div class="admin-special-empty-v66">Todavia no hay usuarios con plan especial. Busca un usuario, elige un precio y guarda.</div></div>';
+    }
+    return '<div class="admin-special-list-v66"><h4>Lista de planes especiales <span>' + users.length + '</span></h4>' + users.map(function(u){
+      var uid = String(u.uid || u.id || '');
+      var name = String(u.displayName || u.name || u.email || 'Usuario');
+      var email = String(u.email || 'sin correo');
+      var st = settingsV72(u.vipSettingsOverride || u.customVipSettings);
+      return '<div class="admin-special-user-row-v66"><div><strong>' + name + '</strong><span>' + email + '</span><small>' + kindTextV72(st) + ' · ' + planSummaryV72(st) + '</small></div><div class="actions"><button class="admin-btn primary" type="button" onclick="adminSelectVipUserV64(\'' + uid.replace(/'/g,"\\'") + '\')">Elegir</button><button class="admin-btn negative" type="button" onclick="adminClearUserVipSettingsForUidV67(\'' + uid.replace(/'/g,"\\'") + '\')">Quitar</button></div></div>';
+    }).join('') + '</div>';
+  }
+  function currentStatusV72(s, type, user){
+    s = settingsV72(s);
+    var isSpecial = type === 'special';
+    var who = isSpecial && user ? String(user.email || user.displayName || user.uid || user.id || 'usuario') : 'Todos los usuarios sin especial';
+    var btn = isSpecial ? '<button class="mini-danger" type="button" onclick="adminClearUserVipSettingsV63()">Quitar</button>' : '<em>Activo</em>';
+    return '<div class="admin-plan-status-v66 ' + (isSpecial ? 'special' : 'normal') + '"><div><span>' + (isSpecial ? 'Plan especial activo' : 'Plan normal activo') + '</span><strong>' + kindTextV72(s) + ' · ' + (s.mode === 'double' ? 'Doble' : 'Lineal') + '</strong><small>' + who + ' · ' + planSummaryV72(s) + '</small></div>' + btn + '</div>';
+  }
+  function readGeneralFormV72(){
+    return settingsV72({
+      mode:String(document.getElementById('adminVipModeV62')?.value || 'linear'),
+      baseRecharge:Number(String(document.getElementById('adminVipBaseRechargeV62')?.value || '10').replace(',','.')),
+      rechargeStep:Number(String(document.getElementById('adminVipRechargeStepV62')?.value || '10').replace(',','.')),
+      baseGain:Number(String(document.getElementById('adminVipBaseGainV62')?.value || '5').replace(',','.')),
+      gainStep:Number(String(document.getElementById('adminVipGainStepV62')?.value || '5').replace(',','.')),
+      taskCount:5,
+      active:true,plans:null
+    });
+  }
+  function readUserFormV72(){
+    return settingsV72({
+      mode:String(document.getElementById('adminUserVipModeV63')?.value || 'linear'),
+      baseRecharge:Number(String(document.getElementById('adminUserVipBaseRechargeV63')?.value || '10').replace(',','.')),
+      rechargeStep:Number(String(document.getElementById('adminUserVipRechargeStepV63')?.value || '10').replace(',','.')),
+      baseGain:Number(String(document.getElementById('adminUserVipBaseGainV63')?.value || '5').replace(',','.')),
+      gainStep:Number(String(document.getElementById('adminUserVipGainStepV63')?.value || '5').replace(',','.')),
+      taskCount:5,
+      active:true,plans:null
+    });
+  }
+
+  window.renderAdminVipPreviewV62 = function(){
+    var wrap = document.getElementById('adminVipPreviewV62');
+    if(wrap) wrap.innerHTML = previewV72(readGeneralFormV72());
+    var badge = document.getElementById('adminVipModeBadgeV63');
+    if(badge) badge.textContent = readGeneralFormV72().mode === 'double' ? 'Doble' : 'Lineal';
+  };
+  window.renderAdminUserVipPreviewV63 = function(){
+    var wrap = document.getElementById('adminUserVipPreviewV63');
+    if(wrap) wrap.innerHTML = previewV72(readUserFormV72());
+  };
+
+  var vipViewV72 = 'general';
+  window.adminSetVipPlanViewV67 = function(view){ vipViewV72 = view === 'user' ? 'user' : 'general'; if(window.renderAdminPanel) renderAdminPanel(); };
+
+  window.renderAdminVipPlansV62 = function(list){
+    var st = settingsV72((window.adminCache && adminCache.vipSettings) || null);
+    if(!list) return;
+    list.innerHTML = '<div class="admin-plan-card-v62 v63 v64">' +
+      '<div class="admin-plan-head-v62 v64"><div><strong>Planes VIP</strong><span>Elige plan normal para todos o especial para un solo usuario.</span></div><div class="admin-plan-badge-v62 v63 v64">Admin</div></div>' +
+      '<div class="admin-plan-tabs-v64">' +
+      '<button class="admin-plan-tab-v64 ' + (vipViewV72 === 'general' ? 'active' : '') + '" type="button" onclick="adminSetVipPlanViewV67(\'general\')"><strong>Plan normal</strong><span>Todos</span></button>' +
+      '<button class="admin-plan-tab-v64 ' + (vipViewV72 === 'user' ? 'active' : '') + '" type="button" onclick="adminSetVipPlanViewV67(\'user\')"><strong>Plan especial</strong><span>1 usuario</span></button>' +
+      '</div>' + (vipViewV72 === 'user' ? userScreenV72(st) : generalScreenV72(st)) + '</div>';
+    if(vipViewV72 === 'user'){
+      setTimeout(function(){ try{ if(window.renderAdminUserSearchV64) renderAdminUserSearchV64(); if(window.renderAdminSelectedUserPlanBoxV65) renderAdminSelectedUserPlanBoxV65(); }catch(e){} },0);
+    }
+  };
+
+  function tasksInfoBoxV72(){
+    return '<div class="admin-plan-mini-note-v63 v64"><b>i</b><span><strong>Tareas automaticas por nivel:</strong> VIP1 5 · VIP2 8 · VIP3 10 · VIP4 12 · VIP5 14 · VIP6 16. Desde VIP7 sube de 2 en 2 hasta 24.</span></div>';
+  }
+  function generalScreenV72(st){
+    st = settingsV72(st);
+    return '<section class="admin-plan-section-v63 general v64">' +
+      '<div class="admin-plan-title-v63 v64"><div class="admin-plan-icon-v63 v64">N</div><div><strong>Plan normal</strong><span>Precio para todos los usuarios sin especial.</span></div><div class="admin-plan-badge-v62 v63 v64" id="adminVipModeBadgeV63">' + (st.mode === 'double' ? 'Doble' : 'Lineal') + '</div></div>' +
+      currentStatusV72(st,'normal') +
+      '<div class="admin-plan-choice-row-v64"><button class="admin-plan-choice-v64 primary" type="button" onclick="adminApplyGeneralPlanV64(\'linearLow\')"><strong>Plan bajo</strong><span>VIP1 5 tareas · VIP2 8 · VIP3 10</span></button><button class="admin-plan-choice-v64" type="button" onclick="adminApplyGeneralPlanV64(\'doubleOld\')"><strong>Plan anterior</strong><span>VIP1 5 tareas · VIP2 8 · VIP3 10</span></button></div>' +
+      '<input id="adminVipTaskCountV62" type="hidden" value="5">' +
+      '<div class="admin-plan-grid-v62 v63 v64">' +
+      '<div class="admin-plan-field-v62 v63 v64"><label>Forma</label><select id="adminVipModeV62" onchange="renderAdminVipPreviewV62()"><option value="linear" ' + (st.mode === 'linear' ? 'selected' : '') + '>Lineal</option><option value="double" ' + (st.mode === 'double' ? 'selected' : '') + '>Doble</option></select></div>' +
+      '<div class="admin-plan-field-v62 v63 v64"><label>VIP1 tareas</label><input type="text" value="5 tareas" readonly></div>' +
+      '<div class="admin-plan-field-v62 v63 v64"><label>VIP1 recarga</label><input id="adminVipBaseRechargeV62" type="number" inputmode="decimal" min="1" step="1" value="' + Number(st.baseRecharge || 10) + '" oninput="renderAdminVipPreviewV62()"></div>' +
+      '<div class="admin-plan-field-v62 v63 v64"><label>VIP1 gana</label><input id="adminVipBaseGainV62" type="number" inputmode="decimal" min="1" step="1" value="' + Number(st.baseGain || 5) + '" oninput="renderAdminVipPreviewV62()"></div>' +
+      '<div class="admin-plan-field-v62 v63 v64"><label>Sube recarga</label><input id="adminVipRechargeStepV62" type="number" inputmode="decimal" min="0" step="1" value="' + Number(st.rechargeStep || 10) + '" oninput="renderAdminVipPreviewV62()"></div>' +
+      '<div class="admin-plan-field-v62 v63 v64"><label>Sube gana</label><input id="adminVipGainStepV62" type="number" inputmode="decimal" min="0" step="1" value="' + Number(st.gainStep || 5) + '" oninput="renderAdminVipPreviewV62()"></div>' +
+      '</div>' + tasksInfoBoxV72() +
+      '<div class="admin-plan-preview-v62 v63 v64" id="adminVipPreviewV62">' + previewV72(st) + '</div>' +
+      '<div class="admin-plan-actions-v62 v63 v64"><button class="admin-btn primary" type="button" onclick="adminSaveVipSettingsV62()">Guardar normal</button><button class="admin-btn" type="button" onclick="adminRefreshVipSettingsV62()">Actualizar</button></div>' +
+      '</section>';
+  }
+  function userScreenV72(st){
+    st = settingsV72(st);
+    return '<section class="admin-plan-section-v63 single v64">' +
+      '<div class="admin-plan-title-v63 v64"><div class="admin-plan-icon-v63 v64">E</div><div><strong>Plan especial</strong><span>Busca usuario y guarda un precio solo para esa cuenta.</span></div><div class="admin-plan-badge-v62 v63 v64">1 usuario</div></div>' +
+      specialSummaryV72() + specialListV72() +
+      '<div id="adminUserCurrentPlanBoxV65">' + currentStatusV72(st,'normal') + '</div>' +
+      '<div class="admin-plan-user-search-v64"><div class="admin-plan-field-v62 v63 v64"><label>Buscar usuario</label><input id="adminVipUserSearchV64" placeholder="Correo, nombre o UID" oninput="renderAdminUserSearchV64()"></div><input id="adminVipUserTargetV63" type="hidden" value=""><div id="adminVipUserFoundV63" class="admin-plan-user-label-v63 v64 hidden">Usuario seleccionado</div><div class="admin-plan-user-results-v64" id="adminVipUserResultsV64"></div></div>' +
+      '<div class="admin-plan-choice-row-v64"><button class="admin-plan-choice-v64 primary" type="button" onclick="adminApplyUserPlanV64(\'linearLow\')"><strong>Activar bajo</strong><span>VIP1 5 tareas · VIP2 8 · VIP3 10</span></button><button class="admin-plan-choice-v64" type="button" onclick="adminApplyUserPlanV64(\'fromGeneral\')"><strong>Copiar normal</strong><span>Usa el plan normal</span></button></div>' +
+      '<input id="adminUserVipTaskCountV63" type="hidden" value="5">' +
+      '<div class="admin-plan-grid-v62 v63 v64">' +
+      '<div class="admin-plan-field-v62 v63 v64"><label>Forma</label><select id="adminUserVipModeV63" onchange="renderAdminUserVipPreviewV63()"><option value="linear">Lineal</option><option value="double">Doble</option></select></div>' +
+      '<div class="admin-plan-field-v62 v63 v64"><label>VIP1 tareas</label><input type="text" value="5 tareas" readonly></div>' +
+      '<div class="admin-plan-field-v62 v63 v64"><label>VIP1 recarga</label><input id="adminUserVipBaseRechargeV63" type="number" inputmode="decimal" min="1" step="1" value="10" oninput="renderAdminUserVipPreviewV63()"></div>' +
+      '<div class="admin-plan-field-v62 v63 v64"><label>VIP1 gana</label><input id="adminUserVipBaseGainV63" type="number" inputmode="decimal" min="1" step="1" value="5" oninput="renderAdminUserVipPreviewV63()"></div>' +
+      '<div class="admin-plan-field-v62 v63 v64"><label>Sube recarga</label><input id="adminUserVipRechargeStepV63" type="number" inputmode="decimal" min="0" step="1" value="10" oninput="renderAdminUserVipPreviewV63()"></div>' +
+      '<div class="admin-plan-field-v62 v63 v64"><label>Sube gana</label><input id="adminUserVipGainStepV63" type="number" inputmode="decimal" min="0" step="1" value="5" oninput="renderAdminUserVipPreviewV63()"></div>' +
+      '</div>' + tasksInfoBoxV72() +
+      '<div class="admin-plan-preview-v62 v63 v64" id="adminUserVipPreviewV63">' + previewV72(st) + '</div>' +
+      '<div class="admin-plan-actions-v62 v63 v64"><button class="admin-btn primary" type="button" onclick="adminSaveUserVipSettingsV63()">Guardar especial</button><button class="admin-btn danger" type="button" onclick="adminClearUserVipSettingsV63()">Quitar especial</button></div>' +
+      '</section>';
+  }
+  window.renderAdminSelectedUserPlanBoxV65 = function(){
+    var box = document.getElementById('adminUserCurrentPlanBoxV65');
+    if(!box) return;
+    var raw = (document.getElementById('adminVipUserTargetV63')?.value || '').trim().toLowerCase();
+    var users = window.adminCache && Array.isArray(adminCache.users) ? adminCache.users : [];
+    var user = users.find(function(u){ return String(u.uid || u.id || '').toLowerCase() === raw || String(u.email || '').toLowerCase() === raw || String(u.uid || u.id || '').toLowerCase().startsWith(raw); });
+    if(!user){ box.innerHTML = '<div class="admin-plan-status-v66 normal"><div><span>Usuario no seleccionado</span><strong>Elige un usuario</strong><small>Busca por correo, nombre o UID para ver su plan.</small></div><em>Info</em></div>'; return; }
+    var sp = user.vipSettingsOverride || user.customVipSettings;
+    var isSp = sp && sp.active !== false;
+    box.innerHTML = currentStatusV72(isSp ? sp : settingsV72(), isSp ? 'special' : 'normal', user);
+  };
+
+  // Mejora visual de textos de recarga insuficiente sin tocar la base.
+  var oldOpenDemoOrderModalV72 = window.openDemoOrderModal;
+  if(typeof oldOpenDemoOrderModalV72 === 'function'){
+    window.openDemoOrderModal = function(mode){
+      oldOpenDemoOrderModalV72(mode);
+      try{
+        var mission = typeof getDemoMission === 'function' ? getDemoMission() : null;
+        if(!mission || !window.demoState) return;
+        var wallet = Number(demoState.wallet || 0);
+        var deficit = Math.max(0, Number(mission.cost || 0) - wallet);
+        if(deficit > 0){
+          var title = document.getElementById('demoOrderModalTitle');
+          var text = document.getElementById('demoOrderText');
+          var alertText = document.getElementById('demoOrderAlertText');
+          var bonus = document.getElementById('demoOrderBonus');
+          var labels = document.querySelectorAll('#demoOrderModal .demo-order-compact-box span');
+          if(title) title.textContent = 'Saldo insuficiente';
+          if(text) text.textContent = 'Para completar esta tarea necesitas ' + moneyV72(mission.cost) + '. Tu saldo actual es ' + moneyV72(wallet) + '. Te faltan ' + moneyV72(deficit) + '. Puedes solicitar una recarga personalizada.';
+          if(alertText) alertText.textContent = 'No alcanza tu saldo. Te faltan ' + moneyV72(deficit) + ' para completar esta tarea.';
+          if(labels && labels[1]) labels[1].textContent = 'Falta';
+          if(bonus){ bonus.textContent = moneyV72(deficit); bonus.style.color = '#b04f3a'; }
+        }
+      }catch(e){}
+    };
+  }
+
+  try { if(window.renderAdminPanel) renderAdminPanel(); } catch(e){}
+})();
+</script>
+<!-- FIX_VIP_TAREAS_DINAMICAS_V72_END -->
+
+
+
+<!-- FIX_ADMIN_TAREAS_PRECIOS_RESET_V90_START -->
+<script>
+/* v90: tareas y precios editables, plan actual claro, reset usuario y recarga sin limite */
+(function(){
+  function nV90(value, fallback){ var n = Number(String(value == null ? fallback : value).replace(',', '.')); return Number.isFinite(n) ? n : fallback; }
+  function moneyV90(value){ try { return money(Number(value || 0)); } catch(e){ return 'S/ ' + Number(value || 0).toFixed(2); } }
+  function escV90(value){ return String(value == null ? '' : value).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function taskAutoV90(vip){ vip = Math.max(1, Math.floor(nV90(vip, 1))); if(vip===1) return 5; if(vip===2) return 8; if(vip===3) return 10; if(vip===4) return 12; if(vip===5) return 14; if(vip===6) return 16; return Math.min(24, 16 + ((vip - 6) * 2)); }
+  function settingsV90(raw){ try { return normalizeVipSettingsV62(raw || (window.adminCache && adminCache.vipSettings) || (window.getVipSettingsV62 && window.getVipSettingsV62()) || window.vipSettingsV62); } catch(e){ return raw || {mode:'linear',baseRecharge:10,rechargeStep:10,baseGain:5,gainStep:5,taskCount:5,active:true,plans:null}; } }
+  var oldBuildPlanV90 = window.buildVipPlanForSettingsV62;
+  function basePlanV90(settings, vip){
+    settings = settingsV90(settings); vip = Math.max(1, Math.floor(nV90(vip, 1)));
+    if(oldBuildPlanV90){ try { return oldBuildPlanV90(settings, vip); } catch(e){} }
+    var recharge = settings.mode === 'double' ? Number(settings.baseRecharge || 20) * Math.pow(2, Math.min(10, vip - 1)) : Number(settings.baseRecharge || 10) + (vip - 1) * Number(settings.rechargeStep || 10);
+    var gain = settings.mode === 'double' ? Number(settings.baseGain || 10) * Math.pow(2, Math.min(10, vip - 1)) : Number(settings.baseGain || 5) + (vip - 1) * Number(settings.gainStep || 5);
+    return {vip:vip,level:vip,badge:'VIP'+vip,name:'VIP'+vip,recharge:recharge,rechargeRequired:recharge,gain:gain,rewardTotal:gain,minGain:gain,maxGain:gain,taskCount:taskAutoV90(vip),label:'VIP'};
+  }
+  function cleanPricesV90(arr){
+    if(!Array.isArray(arr)) return [];
+    return arr.map(function(x){ return Number(Number(String(x).replace(',','.')).toFixed(2)); }).filter(function(x){ return Number.isFinite(x) && x > 0; });
+  }
+  function storedPricesV90(settings, vip){
+    settings = settingsV90(settings); vip = String(Math.max(1, Math.floor(nV90(vip,1))));
+    var box = settings.taskPricesByVip || settings.taskPriceByVip || settings.vipTaskPrices || {};
+    var direct = box[vip] || box['vip' + vip] || box['VIP' + vip];
+    var prices = cleanPricesV90(direct);
+    if(prices.length) return prices;
+    var p = settings.plans && (settings.plans[vip] || settings.plans['vip'+vip] || settings.plans['VIP'+vip]);
+    if(p && Array.isArray(p.taskPrices)) return cleanPricesV90(p.taskPrices);
+    return [];
+  }
+  function defaultPricesV90(settings, vip){
+    var plan = basePlanV90(settings, vip);
+    var count = Math.max(1, storedPricesV90(settings, vip).length || taskAutoV90(vip));
+    var start = Math.max(1, nV90(plan.recharge || plan.rechargeRequired, 10));
+    var extra = Math.min(40, Math.max(4, start * 0.35));
+    var list = [];
+    for(var i=0;i<count;i++) list.push(Number(Math.ceil(start + (count > 1 ? (extra * i / (count - 1)) : 0)).toFixed(2)));
+    return list;
+  }
+  function pricesForVipV90(settings, vip){ var saved = storedPricesV90(settings, vip); return saved.length ? saved : defaultPricesV90(settings, vip); }
+  window.adminTaskCountForVipV90 = function(vip, settings){ return pricesForVipV90(settings || window.vipSettingsV62, vip).length || taskAutoV90(vip); };
+  window.adminTaskPricesForVipV90 = pricesForVipV90;
+  window.buildVipPlanForSettingsV62 = function(settings, cycle){
+    var plan = basePlanV90(settings, cycle);
+    var prices = pricesForVipV90(settings, cycle);
+    plan.taskPrices = prices;
+    plan.taskCount = prices.length || taskAutoV90(cycle);
+    plan.rewardPerTask = Number((Number(plan.gain || plan.rewardTotal || 0) / Math.max(1, plan.taskCount)).toFixed(2));
+    return plan;
+  };
+  if(typeof applyVipSettingsV62 === 'function' && window.vipSettingsV62){ try{ window.vipSettingsV62 = settingsV90(window.vipSettingsV62); }catch(e){} }
+
+  function getCurrentPlanSettingsV90(){ return settingsV90(window.vipSettingsV62); }
+  function currentPlanV90(cycle){ return window.buildVipPlanForSettingsV62(getCurrentPlanSettingsV90(), cycle || (typeof getDemoCycle === 'function' ? getDemoCycle() : 1)); }
+  window.getVipPlan = function(cycle){ return currentPlanV90(cycle || (typeof getDemoCycle === 'function' ? getDemoCycle() : 1)); };
+  window.getTaskGainList = function(cycle){
+    var plan = currentPlanV90(cycle || (typeof getDemoCycle === 'function' ? getDemoCycle() : 1));
+    var count = Math.max(1, Number(plan.taskCount || 1));
+    var total = Number(plan.gain || plan.rewardTotal || 0);
+    var each = Number((total / count).toFixed(2));
+    var list = [], used = 0;
+    for(var i=0;i<count-1;i++){ list.push(each); used += each; }
+    list.push(Number((total - used).toFixed(2)));
+    return list;
+  };
+  window.getMissionGain = function(){
+    var plan = currentPlanV90();
+    var index = Math.max(0, Math.min(Number(plan.taskCount || 1) - 1, Math.floor(nV90(demoState && demoState.currentIndex, demoState && demoState.completed || 0))));
+    var gains = window.getTaskGainList(plan.vip || 1);
+    return Number((gains[index] || gains[0] || 0).toFixed(2));
+  };
+  window.buildDemoMission = function(){
+    var plan = currentPlanV90();
+    var target = Math.max(1, Number(plan.taskCount || 1));
+    var index = Math.max(0, Math.min(target - 1, Math.floor(nV90(demoState && demoState.currentIndex, demoState && demoState.completed || 0))));
+    var base = (Array.isArray(window.demoMissions) ? window.demoMissions[index % demoMissions.length] : null) || (typeof demoMissions !== 'undefined' ? demoMissions[index % demoMissions.length] : null) || {title:'Tarea VIP', image:''};
+    var prices = pricesForVipV90(getCurrentPlanSettingsV90(), plan.vip || 1);
+    return Object.assign({}, base, {cost:Number(prices[index] || prices[0] || plan.recharge || 0), bonus:window.getMissionGain(), requiredRecharge:Number(prices[index] || prices[0] || plan.recharge || 0), gainRange:[plan.gain, plan.gain], taskNumber:index+1, taskCount:target});
+  };
+  window.getDemoMission = function(){ return window.buildDemoMission(); };
+  var oldNormalizeV90 = window.normalizeDemoState;
+  window.normalizeDemoState = function(state){
+    var next = oldNormalizeV90 ? oldNormalizeV90(state) : (state || {});
+    var plan = currentPlanV90(next.cycle || 1);
+    var target = Math.max(1, Number(plan.taskCount || 1));
+    next.completed = Math.max(0, Math.min(target, Math.floor(nV90(next.completed, 0))));
+    next.currentIndex = Math.max(0, Math.min(Math.max(0,target-1), Math.floor(nV90(next.currentIndex, next.completed))));
+    next.cycleClosed = Boolean(next.cycleClosed || next.completed >= target);
+    return next;
+  };
+
+  function activeSettingsForUserV90(user){
+    var special = user && (user.vipSettingsOverride || user.customVipSettings);
+    return (special && special.active !== false) ? settingsV90(special) : settingsV90();
+  }
+  function planLabelForUserV90(user){
+    var special = user && (user.vipSettingsOverride || user.customVipSettings);
+    return (special && special.active !== false) ? 'PLAN ESPECIAL DEL USUARIO' : 'PLAN NORMAL';
+  }
+  function planKindV90(settings){
+    settings = settingsV90(settings);
+    if(settings.mode === 'double') return 'Doble';
+    return 'Lineal';
+  }
+  function planShortV90(settings){
+    settings = settingsV90(settings);
+    var arr = [];
+    for(var vip=1; vip<=3; vip++){ var p = window.buildVipPlanForSettingsV62(settings, vip); arr.push('VIP'+vip+' '+moneyV90(p.recharge)+' · '+p.taskCount+' tareas'); }
+    return arr.join(' · ');
+  }
+
+  window.adminTaskDraftV90 = window.adminTaskDraftV90 || {general:{}, user:{}};
+  function clonePriceMapV90(settings){
+    var src = (settings && settings.taskPricesByVip) || {};
+    var out = {};
+    for(var vip=1; vip<=20; vip++) out[vip] = cleanPricesV90(src[vip] || src['vip'+vip] || defaultPricesV90(settings, vip));
+    return out;
+  }
+  function ensureDraftV90(kind, settings){
+    kind = kind === 'user' ? 'user' : 'general';
+    if(!window.adminTaskDraftV90[kind] || !Object.keys(window.adminTaskDraftV90[kind]).length) window.adminTaskDraftV90[kind] = clonePriceMapV90(settingsV90(settings));
+    return window.adminTaskDraftV90[kind];
+  }
+  function currentVipSelectV90(kind){ var el=document.getElementById(kind==='user'?'adminTaskVipSelectUserV90':'adminTaskVipSelectGeneralV90'); return Math.max(1, Math.floor(nV90(el && el.value, 1))); }
+  window.adminRenderTaskPriceInputsV90 = function(kind){
+    kind = kind === 'user' ? 'user' : 'general';
+    var box = document.getElementById(kind === 'user' ? 'adminTaskPriceListUserV90' : 'adminTaskPriceListGeneralV90');
+    var countInput = document.getElementById(kind === 'user' ? 'adminTaskCountUserV90' : 'adminTaskCountGeneralV90');
+    if(!box) return;
+    var vip = currentVipSelectV90(kind);
+    var draft = ensureDraftV90(kind, kind === 'user' ? readUserBaseV90() : readGeneralBaseV90());
+    if(!draft[vip] || !draft[vip].length) draft[vip] = defaultPricesV90(kind === 'user' ? readUserBaseV90() : readGeneralBaseV90(), vip);
+    if(countInput) countInput.value = draft[vip].length;
+    box.innerHTML = draft[vip].map(function(price, idx){
+      return '<div class="admin-task-price-row-v90"><span>Tarea '+(idx+1)+'</span><label>S/</label><input type="number" min="1" step="0.01" value="'+Number(price).toFixed(2)+'" oninput="adminSetTaskPriceV90(\''+kind+'\','+vip+','+idx+',this.value)"></div>';
+    }).join('');
+  };
+  window.adminSetTaskPriceV90 = function(kind, vip, index, value){
+    var draft = ensureDraftV90(kind, kind === 'user' ? readUserBaseV90() : readGeneralBaseV90());
+    vip = Math.max(1, Math.floor(nV90(vip,1))); index = Math.max(0, Math.floor(nV90(index,0)));
+    if(!draft[vip]) draft[vip] = defaultPricesV90(kind === 'user' ? readUserBaseV90() : readGeneralBaseV90(), vip);
+    draft[vip][index] = Math.max(1, Number(nV90(value, 1).toFixed(2)));
+    renderPreviewV90(kind);
+  };
+  window.adminApplyTaskCountV90 = function(kind){
+    kind = kind === 'user' ? 'user' : 'general';
+    var vip = currentVipSelectV90(kind);
+    var countInput = document.getElementById(kind === 'user' ? 'adminTaskCountUserV90' : 'adminTaskCountGeneralV90');
+    var count = Math.max(1, Math.min(40, Math.floor(nV90(countInput && countInput.value, taskAutoV90(vip)))));
+    var draft = ensureDraftV90(kind, kind === 'user' ? readUserBaseV90() : readGeneralBaseV90());
+    var old = draft[vip] && draft[vip].length ? draft[vip].slice() : defaultPricesV90(kind === 'user' ? readUserBaseV90() : readGeneralBaseV90(), vip);
+    while(old.length < count) old.push(old.length ? Number((old[old.length-1] + 1).toFixed(2)) : 1);
+    draft[vip] = old.slice(0,count);
+    window.adminRenderTaskPriceInputsV90(kind);
+    renderPreviewV90(kind);
+  };
+  function taskEditorHtmlV90(kind, settings){
+    kind = kind === 'user' ? 'user' : 'general';
+    ensureDraftV90(kind, settings);
+    var id = kind === 'user' ? 'User' : 'General';
+    var title = kind === 'user' ? 'Precios de tareas del plan especial' : 'Precios de tareas del plan normal';
+    var options = '';
+    for(var vip=1; vip<=10; vip++) options += '<option value="'+vip+'">VIP'+vip+'</option>';
+    return '<div class="admin-task-editor-v90"><div class="admin-task-editor-head-v90"><div><strong>'+title+'</strong><span>Elige un VIP, cambia cuantas tareas tiene y escribe el precio de cada tarea.</span></div><b>SIN LIMITE DE RECARGA</b></div><div class="admin-task-editor-controls-v90"><label>Editar nivel<select id="adminTaskVipSelect'+id+'V90" onchange="adminRenderTaskPriceInputsV90(\''+kind+'\')">'+options+'</select></label><label>Cantidad de tareas<input id="adminTaskCount'+id+'V90" type="number" min="1" max="40" value="5"></label><button type="button" onclick="adminApplyTaskCountV90(\''+kind+'\')">Aplicar tareas</button></div><div class="admin-task-price-list-v90" id="adminTaskPriceList'+id+'V90"></div><div class="admin-plan-mini-note-v63 v64"><b>i</b><span>Estos precios se guardan en el plan. La tarea 1 puede costar un monto y la tarea 2 otro monto. La recarga ya no tiene limite: el usuario puede solicitar cualquier monto.</span></div></div>';
+  }
+  function readGeneralBaseV90(){
+    return settingsV90({mode:String(document.getElementById('adminVipModeV62')?.value||'linear'),baseRecharge:nV90(document.getElementById('adminVipBaseRechargeV62')?.value,10),rechargeStep:nV90(document.getElementById('adminVipRechargeStepV62')?.value,10),baseGain:nV90(document.getElementById('adminVipBaseGainV62')?.value,5),gainStep:nV90(document.getElementById('adminVipGainStepV62')?.value,5),taskCount:5,active:true,plans:null,taskPricesByVip:window.adminTaskDraftV90.general||{}});
+  }
+  function readUserBaseV90(){
+    return settingsV90({mode:String(document.getElementById('adminUserVipModeV63')?.value||'linear'),baseRecharge:nV90(document.getElementById('adminUserVipBaseRechargeV63')?.value,10),rechargeStep:nV90(document.getElementById('adminUserVipRechargeStepV63')?.value,10),baseGain:nV90(document.getElementById('adminUserVipBaseGainV63')?.value,5),gainStep:nV90(document.getElementById('adminUserVipGainStepV63')?.value,5),taskCount:5,active:true,plans:null,taskPricesByVip:window.adminTaskDraftV90.user||{}});
+  }
+  window.readAdminVipFormV62 = function(){ return readGeneralBaseV90(); };
+  window.readAdminUserVipFormV63 = function(){ return readUserBaseV90(); };
+  function previewV90(settings){
+    settings = settingsV90(settings);
+    var html = '';
+    for(var vip=1; vip<=6; vip++){ var p=window.buildVipPlanForSettingsV62(settings,vip); html += '<div class="admin-plan-preview-item-v62 v63 v64"><span>VIP'+vip+'</span><strong>'+moneyV90(p.recharge)+' · gana '+moneyV90(p.gain)+' · '+p.taskCount+' tareas</strong><small>Primera '+moneyV90(p.taskPrices[0]||p.recharge)+' · Ultima '+moneyV90(p.taskPrices[p.taskPrices.length-1]||p.recharge)+'</small></div>'; }
+    return html;
+  }
+  function renderPreviewV90(kind){ var wrap = document.getElementById(kind==='user'?'adminUserVipPreviewV63':'adminVipPreviewV62'); if(wrap) wrap.innerHTML = previewV90(kind==='user'?readUserBaseV90():readGeneralBaseV90()); }
+  window.renderAdminVipPreviewV62 = function(){ renderPreviewV90('general'); var badge=document.getElementById('adminVipModeBadgeV63'); if(badge) badge.textContent = readGeneralBaseV90().mode === 'double' ? 'Doble' : 'Lineal'; };
+  window.renderAdminUserVipPreviewV63 = function(){ renderPreviewV90('user'); };
+  function currentStatusV90(settings, type, user){
+    settings = settingsV90(settings);
+    var special = type === 'special';
+    var userText = user ? (user.email || user.displayName || user.uid || user.id || 'usuario') : (special ? 'Usuario elegido' : 'Todos los usuarios sin plan especial');
+    return '<div class="admin-plan-status-v66 '+(special?'special':'normal')+'"><div><span>PLAN ACTUAL</span><strong>'+(special?'Plan especial':'Plan normal')+' · '+planKindV90(settings)+'</strong><small>'+escV90(userText)+' · '+planShortV90(settings)+'</small></div><em>'+(special?'ESPECIAL':'NORMAL')+'</em></div>';
+  }
+  function generalScreenV90(st){
+    st = settingsV90(st); window.adminTaskDraftV90.general = clonePriceMapV90(st);
+    return '<section class="admin-plan-section-v63 general v64"><div class="admin-plan-title-v63 v64"><div class="admin-plan-icon-v63 v64">N</div><div><strong>Plan normal</strong><span>Este plan entra actualmente a todos los usuarios sin plan especial.</span></div><div class="admin-plan-badge-v62 v63 v64" id="adminVipModeBadgeV63">'+planKindV90(st)+'</div></div>'+currentStatusV90(st,'normal')+'<div class="admin-plan-choice-row-v64"><button class="admin-plan-choice-v64 primary" type="button" onclick="adminApplyGeneralPlanV64(\'linearLow\')"><strong>Plan bajo</strong><span>Usa valores moderados</span></button><button class="admin-plan-choice-v64" type="button" onclick="adminApplyGeneralPlanV64(\'doubleOld\')"><strong>Plan anterior</strong><span>Subida doble</span></button></div><input id="adminVipTaskCountV62" type="hidden" value="5"><div class="admin-plan-grid-v62 v63 v64"><div class="admin-plan-field-v62 v63 v64"><label>Forma</label><select id="adminVipModeV62" onchange="renderAdminVipPreviewV62()"><option value="linear" '+(st.mode==='linear'?'selected':'')+'>Lineal</option><option value="double" '+(st.mode==='double'?'selected':'')+'>Doble</option></select></div><div class="admin-plan-field-v62 v63 v64"><label>VIP1 recarga base</label><input id="adminVipBaseRechargeV62" type="number" inputmode="decimal" min="1" step="1" value="'+Number(st.baseRecharge||10)+'" oninput="renderAdminVipPreviewV62()"></div><div class="admin-plan-field-v62 v63 v64"><label>VIP1 gana</label><input id="adminVipBaseGainV62" type="number" inputmode="decimal" min="1" step="1" value="'+Number(st.baseGain||5)+'" oninput="renderAdminVipPreviewV62()"></div><div class="admin-plan-field-v62 v63 v64"><label>Sube recarga</label><input id="adminVipRechargeStepV62" type="number" inputmode="decimal" min="0" step="1" value="'+Number(st.rechargeStep||10)+'" oninput="renderAdminVipPreviewV62()"></div><div class="admin-plan-field-v62 v63 v64"><label>Sube gana</label><input id="adminVipGainStepV62" type="number" inputmode="decimal" min="0" step="1" value="'+Number(st.gainStep||5)+'" oninput="renderAdminVipPreviewV62()"></div></div>'+taskEditorHtmlV90('general',st)+'<div class="admin-plan-preview-v62 v63 v64" id="adminVipPreviewV62">'+previewV90(st)+'</div><div class="admin-plan-actions-v62 v63 v64"><button class="admin-btn primary" type="button" onclick="adminSaveVipSettingsV62()">Guardar normal</button><button class="admin-btn" type="button" onclick="adminRefreshVipSettingsV62()">Actualizar</button></div></section>';
+  }
+  function userScreenV90(st){
+    st = settingsV90(st); window.adminTaskDraftV90.user = clonePriceMapV90(st);
+    return '<section class="admin-plan-section-v63 single v64"><div class="admin-plan-title-v63 v64"><div class="admin-plan-icon-v63 v64">E</div><div><strong>Plan especial</strong><span>Busca un usuario y guarda precios solo para esa cuenta.</span></div><div class="admin-plan-badge-v62 v63 v64">1 usuario</div></div><div id="adminUserCurrentPlanBoxV65">'+currentStatusV90(st,'normal')+'</div><div class="admin-plan-user-search-v64"><div class="admin-plan-field-v62 v63 v64"><label>Buscar usuario</label><input id="adminVipUserSearchV64" placeholder="Correo, nombre o UID" oninput="renderAdminUserSearchV64()"></div><input id="adminVipUserTargetV63" type="hidden" value=""><div id="adminVipUserFoundV63" class="admin-plan-user-label-v63 v64 hidden">Usuario seleccionado</div><div class="admin-plan-user-results-v64" id="adminVipUserResultsV64"></div></div><div class="admin-plan-choice-row-v64"><button class="admin-plan-choice-v64 primary" type="button" onclick="adminApplyUserPlanV64(\'linearLow\')"><strong>Activar bajo</strong><span>Valores moderados</span></button><button class="admin-plan-choice-v64" type="button" onclick="adminApplyUserPlanV64(\'fromGeneral\')"><strong>Copiar normal</strong><span>Usa el plan normal</span></button></div><input id="adminUserVipTaskCountV63" type="hidden" value="5"><div class="admin-plan-grid-v62 v63 v64"><div class="admin-plan-field-v62 v63 v64"><label>Forma</label><select id="adminUserVipModeV63" onchange="renderAdminUserVipPreviewV63()"><option value="linear">Lineal</option><option value="double">Doble</option></select></div><div class="admin-plan-field-v62 v63 v64"><label>VIP1 recarga base</label><input id="adminUserVipBaseRechargeV63" type="number" inputmode="decimal" min="1" step="1" value="10" oninput="renderAdminUserVipPreviewV63()"></div><div class="admin-plan-field-v62 v63 v64"><label>VIP1 gana</label><input id="adminUserVipBaseGainV63" type="number" inputmode="decimal" min="1" step="1" value="5" oninput="renderAdminUserVipPreviewV63()"></div><div class="admin-plan-field-v62 v63 v64"><label>Sube recarga</label><input id="adminUserVipRechargeStepV63" type="number" inputmode="decimal" min="0" step="1" value="10" oninput="renderAdminUserVipPreviewV63()"></div><div class="admin-plan-field-v62 v63 v64"><label>Sube gana</label><input id="adminUserVipGainStepV63" type="number" inputmode="decimal" min="0" step="1" value="5" oninput="renderAdminUserVipPreviewV63()"></div></div>'+taskEditorHtmlV90('user',st)+'<div class="admin-plan-preview-v62 v63 v64" id="adminUserVipPreviewV63">'+previewV90(st)+'</div><div class="admin-plan-actions-v62 v63 v64"><button class="admin-btn primary" type="button" onclick="adminSaveUserVipSettingsV63()">Guardar especial</button><button class="admin-btn danger" type="button" onclick="adminClearUserVipSettingsV63()">Quitar especial</button></div></section>';
+  }
+  window.adminSetVipPlanViewV90 = function(view){ window.adminVipPlanViewV90 = view === 'user' ? 'user' : 'general'; try{ renderAdminPanel(); }catch(e){} };
+  window.renderAdminVipPlansV62 = function(list){
+    var st = settingsV90((window.adminCache && adminCache.vipSettings) || getCurrentPlanSettingsV90());
+    var view = window.adminVipPlanViewV90 || window.adminVipPlanViewV64 || 'general';
+    list.innerHTML = '<div class="admin-plan-card-v62 v63 v64"><div class="admin-plan-head-v62 v64"><div><strong>Planes VIP</strong><span>Plan actual claro, precios por tarea y recarga sin limite.</span></div><div class="admin-plan-badge-v62 v63 v64">Admin</div></div><div class="admin-plan-tabs-v64"><button class="admin-plan-tab-v64 '+(view==='general'?'active':'')+'" type="button" onclick="adminSetVipPlanViewV90(\'general\')"><strong>Plan normal</strong><span>Todos</span></button><button class="admin-plan-tab-v64 '+(view==='user'?'active':'')+'" type="button" onclick="adminSetVipPlanViewV90(\'user\')"><strong>Plan especial</strong><span>1 usuario</span></button></div>'+(view==='user'?userScreenV90(st):generalScreenV90(st))+'</div>';
+    setTimeout(function(){ try{ adminRenderTaskPriceInputsV90(view==='user'?'user':'general'); if(view==='user'){ if(window.renderAdminUserSearchV64) renderAdminUserSearchV64(); if(window.renderAdminSelectedUserPlanBoxV65) renderAdminSelectedUserPlanBoxV65(); } }catch(e){} },0);
+  };
+  window.renderAdminSelectedUserPlanBoxV65 = function(){
+    var box=document.getElementById('adminUserCurrentPlanBoxV65'); if(!box) return;
+    var raw=(document.getElementById('adminVipUserTargetV63')?.value||'').trim().toLowerCase();
+    var users=(window.adminCache && Array.isArray(adminCache.users))?adminCache.users:[];
+    var user=users.find(function(u){ return String(u.uid||u.id||'').toLowerCase()===raw || String(u.email||'').toLowerCase()===raw || String(u.uid||u.id||'').toLowerCase().startsWith(raw); });
+    if(!user){ box.innerHTML='<div class="admin-plan-status-v66 normal"><div><span>PLAN ACTUAL</span><strong>Usuario no seleccionado</strong><small>Busca por correo, nombre o UID para ver si usa plan normal o especial.</small></div><em>INFO</em></div>'; return; }
+    var settings=activeSettingsForUserV90(user); var special=user.vipSettingsOverride||user.customVipSettings; box.innerHTML=currentStatusV90(settings, special&&special.active!==false?'special':'normal', user);
+    window.adminTaskDraftV90.user = clonePriceMapV90(settings); setTimeout(function(){ adminRenderTaskPriceInputsV90('user'); renderPreviewV90('user'); },0);
+  };
+  window.adminSaveVipSettingsV62 = async function(){
+    var settings = readGeneralBaseV90();
+    var msg = 'Vas a guardar el PLAN NORMAL.\n\n' + planShortV90(settings) + '\n\nLa recarga no tendra limite.';
+    if(typeof adminConfirmVipV64 === 'function'){ var ok = await adminConfirmVipV64('Guardar plan normal', msg); if(!ok) return; }
+    var bridge = getAdminBridge ? getAdminBridge() : window.TiendaFirebaseBridge;
+    try{ if(bridge && bridge.adminSaveVipSettings) await bridge.adminSaveVipSettings(settings); if(window.applyVipSettingsV62) applyVipSettingsV62(settings,true); showToast('Plan normal guardado'); if(window.adminRefresh) await adminRefresh(); if(window.renderAdminPanel) renderAdminPanel(); }catch(e){ showToast('No se pudo guardar el plan normal'); }
+  };
+  window.adminSaveUserVipSettingsV63 = async function(){
+    var raw=(document.getElementById('adminVipUserTargetV63')?.value||'').trim(); var user = typeof resolveAdminVipTargetV63 === 'function' ? resolveAdminVipTargetV63(raw) : null; var uid = user ? String(user.uid || user.id || '') : raw;
+    if(!uid){ showToast('Primero elige un usuario'); return; }
+    var settings = readUserBaseV90();
+    if(typeof adminConfirmVipV64 === 'function'){ var ok = await adminConfirmVipV64('Guardar plan especial', 'Usuario: '+String((user&&user.email)||uid)+'\n\n'+planShortV90(settings)+'\n\nEste plan solo sera para este usuario.'); if(!ok) return; }
+    var bridge = getAdminBridge ? getAdminBridge() : window.TiendaFirebaseBridge;
+    try{ if(!bridge || !bridge.adminSaveUserVipSettings) throw new Error('Sin admin'); await bridge.adminSaveUserVipSettings(uid, settings); showToast('Plan especial guardado'); if(window.adminRefresh) await adminRefresh(); window.adminVipPlanViewV90='user'; if(window.renderAdminPanel) renderAdminPanel(); }catch(e){ showToast('No se pudo guardar el plan especial'); }
+  };
+
+  window.renderAdminUsers = function(list){
+    var users = typeof filterAdminItems === 'function' ? filterAdminItems((adminCache && adminCache.users) || []) : ((adminCache && adminCache.users) || []);
+    if(!users.length){ list.innerHTML='<div class="admin-empty">Todavia no hay usuarios sincronizados.</div>'; return; }
+    list.innerHTML = users.map(function(user){
+      var uid=String(user.uid||user.id||''); var shortUid=uid?uid.slice(0,8)+'...':'sin uid'; var name=user.displayName||user.email||user.name||'Usuario'; var wallet=Number(user.wallet||0); var cycle=Math.max(1,Number(user.cycle||user.vipLevel||1)); var completed=Number(user.completed||0); var withdrawable=Number(user.withdrawable||0); var blocked=Boolean(user.blocked||String(user.status||'').toLowerCase()==='blocked'); var settings=activeSettingsForUserV90(user); var p=window.buildVipPlanForSettingsV62(settings,cycle); var planName=planLabelForUserV90(user);
+      var planChip='<div class="admin-user-plan-chip-v66 '+(planName.indexOf('ESPECIAL')>=0?'special':'normal')+'"><div><span>PLAN QUE ENTRA ACTUALMENTE</span><strong>'+planName+' · VIP'+cycle+'</strong><small>Recarga base '+moneyV90(p.recharge)+' · gana '+moneyV90(p.gain)+' · '+p.taskCount+' tareas</small></div><b>'+(planName.indexOf('ESPECIAL')>=0?'ESPECIAL':'NORMAL')+'</b></div>';
+      return '<article class="admin-user-card '+(blocked?'blocked':'')+'"><div class="admin-user-top"><div><strong>'+escV90(name)+'</strong><span>'+escV90(user.email||shortUid)+'</span><span>UID: '+escV90(shortUid)+'</span><small>Recargado: '+moneyV90(Number(user.totalRecharged||0))+' · Retirado: '+moneyV90(Number(user.totalWithdrawn||0))+'</small>'+planChip+'</div><div class="admin-pill '+(blocked?'blocked':'')+'">'+(blocked?'Bloqueado':'VIP'+cycle)+'</div></div><div class="admin-user-stats"><div class="admin-user-stat"><span>Saldo</span><strong>'+moneyV90(wallet)+'</strong></div><div class="admin-user-stat"><span>Tareas</span><strong>'+completed+'/'+p.taskCount+'</strong></div><div class="admin-user-stat"><span>Retirable</span><strong>'+moneyV90(withdrawable)+'</strong></div></div><div class="admin-user-actions v47"><button class="admin-btn" onclick="adminRechargeUser(\''+uid+'\',10)">+ S/10</button><button class="admin-btn" onclick="adminRechargeUser(\''+uid+'\',50)">+ S/50</button><button class="admin-btn primary" onclick="adminRechargeCustom(\''+uid+'\')">Recarga libre</button><button class="admin-btn negative" onclick="adminRemoveCustom(\''+uid+'\')">Quitar saldo</button><button class="admin-btn" onclick="adminToggleBlockUser(\''+uid+'\', '+(blocked?'false':'true')+')">'+(blocked?'Activar':'Bloquear')+'</button><button class="admin-btn danger" onclick="adminResetUserFromZeroV90(\''+uid+'\')">Resetear cero</button><button class="admin-btn negative" onclick="adminDeleteUser(\''+uid+'\')">Eliminar</button><button class="admin-btn" onclick="adminCopyUid(\''+uid+'\')">UID</button></div></article>';
+    }).join('');
+  };
+  window.adminRechargeCustom = function(uid){ var raw = prompt('Monto a recargar sin limite. Escribe cualquier monto:', '100'); if(raw === null) return; var amount = Number(String(raw).replace(',','.')); if(!Number.isFinite(amount) || amount <= 0){ showToast('Monto invalido'); return; } adminRechargeUser(uid, amount); };
+  window.adminResetUserFromZeroV90 = async function(uid){
+    if(!uid){ showToast('UID invalido'); return; }
+    var ok = confirm('Resetear este usuario desde cero?\n\nSe pondra saldo 0, VIP1, tareas 0, ganancias 0 y quedara activo.');
+    if(!ok) return;
+    var bridge = getAdminBridge ? getAdminBridge() : window.TiendaFirebaseBridge;
+    try{
+      if(bridge && bridge.adminResetUserZero) await bridge.adminResetUserZero(uid);
+      else if(bridge && bridge.adminDeleteUser) await bridge.adminDeleteUser(uid);
+      else throw new Error('Sin admin');
+      showToast('Usuario reseteado desde cero');
+      if(window.adminRefresh) await adminRefresh();
+      if(window.renderAdminPanel) renderAdminPanel();
+    }catch(e){ showToast('No se pudo resetear'); }
+  };
+
+  window.getRechargeOptionsForVip = function(){ var plan=currentPlanV90(); var mission=window.getDemoMission?window.getDemoMission():null; var base=Math.max(1, Number((mission&&mission.cost)||plan.recharge||20)); return [base, base+10, base+30, base+50]; };
+  window.openRechargeRequest = function(){ backScreen = activeScreen || 'catalogo'; var mission=window.getDemoMission?window.getDemoMission():null; selectedRechargeAmountV41 = Math.max(1, Number((mission&&mission.cost)||20)); openScreen('recarga'); };
+  window.selectRechargeAmount = function(amount){ amount = Number(String(amount||0).replace(',','.')); if(!Number.isFinite(amount)||amount<=0){ showToast('Ingresa un monto valido'); return; } selectedRechargeAmountV41 = amount; renderRechargeScreen(); };
+  window.renderRechargeScreen = function(){
+    var balanceEl=document.getElementById('rechargeCurrentBalance'), selectedEl=document.getElementById('rechargeSelectedAmount'), grid=document.getElementById('rechargeAmountGrid'); if(!balanceEl||!selectedEl||!grid) return;
+    demoState=normalizeDemoState(demoState); var plan=currentPlanV90(); var mission=window.getDemoMission?window.getDemoMission():null; var deficit=mission?Math.max(0,Number(mission.cost||0)-Number(demoState.wallet||0)):0; var options=getRechargeOptionsForVip();
+    if(!Number(selectedRechargeAmountV41||0)) selectedRechargeAmountV41=options[0]; balanceEl.textContent=moneyV90(demoState.wallet||0); selectedEl.textContent=moneyV90(selectedRechargeAmountV41);
+    grid.innerHTML = options.map(function(amount){ return '<button class="recharge-amount-btn-v41 '+(Number(amount)===Number(selectedRechargeAmountV41)?'active':'')+'" type="button" onclick="selectRechargeAmount('+amount+')">'+moneyV90(amount)+'</button>'; }).join('') + '<div class="recharge-custom-card-v71"><label>Recarga personalizada sin limite</label><div class="recharge-custom-row-v71"><span>S/</span><input id="rechargeCustomInputV90" type="number" inputmode="decimal" min="1" step="0.01" placeholder="Escribe cualquier monto" value="'+Number(selectedRechargeAmountV41||0).toFixed(2)+'" onchange="selectRechargeAmount(this.value)"><button type="button" onclick="selectRechargeAmount(document.getElementById(\'rechargeCustomInputV90\').value)">Usar</button></div><div class="recharge-custom-help-v71">No hay limite de recarga. Para esta tarea falta '+moneyV90(deficit)+'.</div></div>';
+    var set=function(id,v){var el=document.getElementById(id); if(el) el.textContent=v;}; set('rechargeVipBadge','VIP'+(typeof getDemoCycle==='function'?getDemoCycle():1)); set('rechargeVipLevel','VIP'+(typeof getDemoCycle==='function'?getDemoCycle():1)+' · '+(plan.label||'Nivel')); set('rechargeVipGain',moneyV90(plan.gain||0)); set('rechargeSectionTitle','Recarga personalizada sin limite'); set('rechargePlanNote','Puedes escribir cualquier monto. El saldo se acredita solo cuando el gerente lo aprueba.'); set('rechargeCurrentPlanTextV65',(window.vipPlanSourceTextV65?window.vipPlanSourceTextV65():'Plan')+' · '+plan.taskCount+' tareas · recarga libre'); set('rechargeCurrentPlanTagV65',window.vipPlanTagTextV65?window.vipPlanTagTextV65():'VIP'); var preview=document.getElementById('rechargeMessagePreviewV51'); if(preview) preview.textContent=buildRechargeMessageV51(Number(selectedRechargeAmountV41||0));
+  };
+  window.confirmSelectedRecharge = async function(){ var amount=Number(String(selectedRechargeAmountV41||0).replace(',','.')); if(!Number.isFinite(amount)||amount<=0){ showToast('Ingresa un monto valido'); return; } if(typeof needsLoginV47==='function'&&needsLoginV47()){ showToast('Inicia sesion para solicitar recarga'); backScreen=activeScreen||'recarga'; openScreen('acceso'); return; } addDemoHistory('recharge','Solicitud de recarga libre','Pendiente de aprobacion · '+moneyV90(amount),0,{requestedAmount:amount,status:'pending',custom:true}); if(window.TiendaFirebaseBridge&&typeof window.TiendaFirebaseBridge.recordRechargeRequest==='function') window.TiendaFirebaseBridge.recordRechargeRequest(amount,demoState,{source:'GerenteShein09',method:'telegram',custom:true}); saveDemoState(); renderDemoHistory(); renderProfessionalHistoryScreen(); var status=document.getElementById('rechargeStatusV51'); if(status){status.textContent='Solicitud registrada. Envia tu comprobante y espera aprobacion.'; status.classList.add('show');} renderRechargeScreen(); showToast('Mensaje listo. Abriendo chat.'); openManagerTelegramV51(); };
+
+  window.getVipRankInfo = function(){ var cycle=typeof getDemoCycle==='function'?getDemoCycle():1; var plan=currentPlanV90(cycle); var target=Math.max(1,Number(plan.taskCount||1)); var hide=typeof shouldHideAccountData==='function'?shouldHideAccountData():false; var completed=hide?0:Math.max(0,Math.min(target,Number(demoState.completed||0))); var rank={name:cycle===1?'Clasificacion Bronce':cycle===2?'Clasificacion Plata':cycle===3?'Clasificacion Oro':cycle===4?'Clasificacion Platino':'Clasificacion Diamante', icon:cycle===1?'III':cycle===2?'II':cycle===3?'I':cycle===4?'◆':'★', badge:'VIP'+cycle}; var nextPlan=currentPlanV90(cycle+1); return {cycle:cycle,completed:completed,target:target,rank:rank,plan:plan,nextPlan:nextPlan,currentGain:Number(plan.gain||0),nextGain:Number(nextPlan.gain||0),progressPercent:Math.min(100,Math.max(0,completed/target*100)),bestCycle:Math.max(1,Number(demoState.bestCycle||cycle)),bestCompleted:Math.max(0,Number(demoState.bestCompleted||completed))}; };
+  window.renderVipProgressCard = function(){ var info=getVipRankInfo(); var set=function(id,v){var el=document.getElementById(id); if(el) el.textContent=v;}; var fill=document.getElementById('introRankProgressFill'); if(fill) fill.style.width=info.progressPercent+'%'; set('introRankIcon',info.rank.icon); set('introRankBadge',info.rank.badge); set('introRankName',info.rank.name); set('introRankMotivation',info.completed>=info.target?'Ronda lista. Puedes retirar.':'VIP'+info.cycle+' tiene '+info.target+' tareas. Faltan '+Math.max(0,info.target-info.completed)+'.'); set('introRankProgressText',info.completed+' de '+info.target+' tareas completadas'); set('introRankCycle','Ronda '+info.cycle); set('introRankCurrent',moneyV90(info.currentGain)); set('introRankNext',moneyV90(info.nextGain)); set('introRankRecord','VIP'+info.bestCycle+' · '+info.bestCompleted+'/'+info.target); };
+  window.renderIntroScreen = function(){
+    var stepsBox=document.getElementById('introStepsList'), notesBox=document.getElementById('introNotesList'); if(!stepsBox||!notesBox) return; demoState=normalizeDemoState(demoState); var info=getVipRankInfo(); var mission=getDemoMission(); var target=info.target; var insufficient=mission&&demoState.completed<target&&Number(demoState.wallet||0)<Number(mission.cost||0); var remaining=Math.max(0,target-demoState.completed); var gains=getTaskGainList(info.cycle); var set=function(id,v){var el=document.getElementById(id); if(el) el.textContent=v;}; var html=function(id,v){var el=document.getElementById(id); if(el) el.innerHTML=v;};
+    set('introDemoMode',''); set('introBalanceValue',moneyV90(getDemoTotal())); set('introVipTitle','Nivel de miembro VIP'+info.cycle); set('introVipMeta','Ronda '+info.cycle+' · '+target+' tareas · precios editables por admin · ganancia '+moneyV90(info.currentGain)); set('introVipProgress',demoState.completed+' / '+target); set('introCommissionValue',moneyV90(demoState.rewardToday)); set('introFrozenValue',moneyV90(demoState.frozen)); set('introOrderCountValue',demoState.completed+' / '+target); set('introAvailableValue',moneyV90(getDemoTotal())); set('introLeadText','Cada VIP puede tener cantidad de tareas y precio por tarea configurados desde el panel admin.');
+    set('introMissionTag',demoState.completed>=target?'Meta de ronda completada':(insufficient?'Saldo insuficiente':'Mision disponible')); set('introMissionTitle',demoState.completed>=target?('Ya completaste tus '+target+' tareas'):mission.title); set('introMissionText',demoState.completed>=target?('Ronda completada. Ganaste '+moneyV90(info.currentGain)+' y ya puedes retirar.'):(insufficient?('Para la tarea '+(demoState.completed+1)+' de '+target+' se requiere '+moneyV90(mission.cost)+'. Tu saldo es '+moneyV90(demoState.wallet)+'. Te faltan '+moneyV90(Math.max(0,mission.cost-demoState.wallet))+'.'):('Tarea '+(demoState.completed+1)+' de '+target+'. Al comprar se suma '+moneyV90(mission.bonus)+' de ganancia.'))); try{ html('introMissionPrice',moneyCompact(demoState.completed>=target?getDemoTotal():mission.cost)); }catch(e){ set('introMissionPrice',moneyV90(demoState.completed>=target?getDemoTotal():mission.cost)); } set('introMissionReward',demoState.completed>=target?'Saldo listo para retirar':(insufficient?'Falta '+moneyV90(Math.max(0,mission.cost-demoState.wallet)):'Tarea + '+moneyV90(mission.bonus))); set('introMissionStatus',demoState.completed>=target?'Retiro habilitado':(insufficient?'Recarga':'Disponible')); set('introMissionStatusText',demoState.completed>=target?'Pulsa retirar':(insufficient?'Saldo insuficiente':'Pulsa comprar')); set('introMissionTimer',demoState.completed>=target?'Listo':(insufficient?'Libre':'15 min')); set('introMissionTimerText',demoState.completed>=target?'Retiro':(insufficient?'Recarga':'Tiempo')); set('introMissionLeft',String(remaining)); set('introMissionLeftText','Restantes'); var startBtn=document.getElementById('introStartBtn'); if(startBtn){ startBtn.textContent=demoState.completed>=target?'Ronda completada':(insufficient?'Recargar':'Comprar'); startBtn.disabled=demoState.completed>=target; } var withdrawBtn=document.getElementById('introWithdrawBtn'); if(withdrawBtn){ withdrawBtn.textContent='Retirar saldo'; withdrawBtn.disabled=!(demoState.completed>=target&&demoState.wallet>0); } renderVipProgressCard(); try{ stepsBox.innerHTML=introT('steps').map(function(item,i){return '<div class="intro-step"><div class="intro-step-index">'+(i+1)+'</div><p>'+item+'</p></div>';}).join(''); notesBox.innerHTML=introT('notes').map(function(item){return '<div class="intro-note"><div class="intro-note-icon">i</div><p>'+item+'</p></div>';}).join(''); }catch(e){} try{ renderDemoHistory(); renderProfessionalHistoryScreen(); renderWithdrawalHistoryScreen(); renderProfileWithdrawalSummary(); renderProfileDashboard(); renderBalanceScreen(); renderRankScreen(); }catch(e){}
+  };
+  window.demoTaskAction = function(){ var info=getVipRankInfo(); if(demoState.completed>=info.target){ showToast('Ya completaste '+info.target+' de '+info.target+'. Retiro habilitado.'); return; } var mission=getDemoMission(); if(mission&&demoState.wallet<mission.cost){ openRechargeRequest(); return; } openDemoOrderModal('accept'); };
+  window.completeDemoMission = function(){ var mission=getDemoMission(); if(!mission) return; var info=getVipRankInfo(); if(Number(demoState.wallet||0)<Number(mission.cost||0)){ showToast('Saldo insuficiente. Recarga para continuar.'); return; } var before=Number(demoState.wallet||0); demoState.wallet=Number((before+Number(mission.bonus||0)).toFixed(2)); demoState.rewardToday=Number((Number(demoState.rewardToday||0)+Number(mission.bonus||0)).toFixed(2)); demoState.withdrawable=Number((Number(demoState.withdrawable||0)+Number(mission.bonus||0)).toFixed(2)); demoState.lastCost=mission.cost; demoState.frozen=0; demoState.active=false; demoState.completed+=1; demoState.bestCompleted=Math.max(demoState.bestCompleted||0,demoState.completed); demoState.bestCycle=Math.max(demoState.bestCycle||1,info.cycle); demoState.currentIndex=Math.min(demoState.completed,info.target-1); var completedNow=demoState.completed>=info.target; if(completedNow) demoState.cycleClosed=true; addDemoHistory(completedNow?'complete':'purchase',completedNow?'Ronda completada':'Compra completada',mission.title+' · saldo '+moneyV90(before)+' -> '+moneyV90(demoState.wallet),mission.bonus,{product:mission.title,image:mission.image,total:mission.cost,commission:mission.bonus,status:'completed'}); if(window.TiendaFirebaseBridge&&typeof window.TiendaFirebaseBridge.recordMissionOrder==='function') window.TiendaFirebaseBridge.recordMissionOrder(mission,demoState); saveDemoState(); renderIntroScreen(); updateHomeDemoCards(); animateBalance(); showToast(completedNow?('Completaste '+info.target+' de '+info.target+'. Ganancia: '+moneyV90(info.currentGain)):('Compra completada + '+moneyV90(mission.bonus))); };
+  window.openWithdrawRequest = function(){ demoState=normalizeDemoState(demoState); var info=getVipRankInfo(); if(demoState.completed<info.target){ showToast('Completa las '+info.target+' tareas para habilitar retiro'); return; } if(getWithdrawAvailable()<=0){ showToast('No hay saldo disponible para retirar'); return; } backScreen=activeScreen||'introduccion'; openScreen('retirar'); };
+
+  var css=document.createElement('style'); css.textContent='.admin-task-editor-v90{grid-column:1/-1;background:rgba(255,255,255,.62);border:1px solid var(--line);border-radius:16px;padding:10px;margin:8px 0;display:grid;gap:9px}.admin-task-editor-head-v90{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.admin-task-editor-head-v90 strong{display:block;font-size:13px}.admin-task-editor-head-v90 span{display:block;font-size:10.5px;color:var(--muted);line-height:1.25}.admin-task-editor-head-v90 b{font-size:8.5px;border-radius:999px;padding:5px 7px;background:rgba(16,210,111,.12);color:#0dbf66;white-space:nowrap}.admin-task-editor-controls-v90{display:grid;grid-template-columns:1fr 1fr auto;gap:7px;align-items:end}.admin-task-editor-controls-v90 label{font-size:10px;font-weight:850;color:var(--muted)}.admin-task-editor-controls-v90 select,.admin-task-editor-controls-v90 input{width:100%;height:36px;border:1px solid var(--line);border-radius:12px;background:#fff;padding:0 9px;font-weight:850}.admin-task-editor-controls-v90 button{height:36px;border:0;border-radius:12px;background:linear-gradient(135deg,var(--accent1),var(--accent2));font-weight:950}.admin-task-price-list-v90{display:grid;grid-template-columns:1fr 1fr;gap:7px;max-height:220px;overflow:auto;padding-right:2px}.admin-task-price-row-v90{display:grid;grid-template-columns:1fr auto 1.2fr;gap:5px;align-items:center;border:1px solid var(--line);background:#fff;border-radius:12px;padding:7px}.admin-task-price-row-v90 span{font-size:10.5px;font-weight:900}.admin-task-price-row-v90 label{font-weight:950;color:#ff7a18}.admin-task-price-row-v90 input{min-width:0;border:0;outline:0;font-weight:900}@media(max-width:430px){.admin-task-editor-controls-v90{grid-template-columns:1fr}.admin-task-price-list-v90{grid-template-columns:1fr}}'; document.head.appendChild(css);
+  try{ if(window.renderAdminPanel) renderAdminPanel(); }catch(e){}
+})();
+</script>
+<!-- FIX_ADMIN_TAREAS_PRECIOS_RESET_V90_END -->
+
 </body>
 </html>
