@@ -15501,5 +15501,352 @@
 </script>
 <!-- FIX_ADMIN_TAREAS_PRECIOS_RESET_V90_END -->
 
+
+
+<!-- FIX_TAREAS_DINAMICAS_NO_SE_TRABA_V93_START -->
+<script>
+/* v93: corrige el bloqueo en 5 tareas. Ahora la ronda usa la cantidad real
+   configurada en el admin para cada VIP y cada precio de tarea se respeta. */
+(function(){
+  function nFix(value, fallback){
+    var n = Number(String(value == null ? fallback : value).replace(',', '.'));
+    return Number.isFinite(n) ? n : fallback;
+  }
+  function moneyFix(value){
+    try { return money(Number(value || 0)); }
+    catch(e){ return 'S/ ' + Number(value || 0).toFixed(2); }
+  }
+  function currentCycleFix(state){
+    try { return Math.max(1, Math.floor(nFix(state && (state.cycle || state.vipLevel), (typeof getDemoCycle === 'function' ? getDemoCycle() : 1)))); }
+    catch(e){ return 1; }
+  }
+  function currentPlanFix(cycle){
+    cycle = Math.max(1, Math.floor(nFix(cycle, 1)));
+    try {
+      if(typeof getVipPlan === 'function') return getVipPlan(cycle) || {};
+      if(window.getVipPlan) return window.getVipPlan(cycle) || {};
+    } catch(e){}
+    try {
+      if(window.buildVipPlanForSettingsV62) return window.buildVipPlanForSettingsV62(window.vipSettingsV62 || {}, cycle) || {};
+    } catch(e){}
+    return {vip:cycle, level:cycle, badge:'VIP' + cycle, recharge:10, gain:5, taskCount:5, taskPrices:[]};
+  }
+  function targetForCycleFix(cycle){
+    var plan = currentPlanFix(cycle);
+    var count = Number(plan.taskCount || 0);
+    if((!count || count < 1) && Array.isArray(plan.taskPrices)) count = plan.taskPrices.length;
+    return Math.max(1, Math.min(40, Math.floor(nFix(count, 5))));
+  }
+  function baseStateFix(){
+    return {
+      wallet:0, frozen:0, completed:0, rewardToday:0, withdrawable:0,
+      totalRecharged:0, totalWithdrawn:0, active:false, currentIndex:0,
+      lastCost:16, cycle:1, cycleClosed:false, bestCycle:1, bestCompleted:0,
+      history:[], withdrawals:[], withdrawProfile:{}
+    };
+  }
+
+  window.normalizeDemoState = function(state){
+    var base = baseStateFix();
+    var raw = state && typeof state === 'object' ? state : {};
+    var next = Object.assign({}, base, raw);
+    next.cycle = currentCycleFix(next);
+    var target = targetForCycleFix(next.cycle);
+    next.wallet = Math.max(0, nFix(next.wallet, 0));
+    next.withdrawable = Math.max(0, nFix(next.withdrawable, 0));
+    next.rewardToday = Math.max(0, nFix(next.rewardToday, 0));
+    next.totalRecharged = Math.max(0, nFix(next.totalRecharged, 0));
+    next.totalWithdrawn = Math.max(0, nFix(next.totalWithdrawn, 0));
+    next.frozen = 0;
+    next.completed = Math.max(0, Math.min(target, Math.floor(nFix(next.completed, 0))));
+    next.currentIndex = Math.max(0, Math.min(Math.max(0, target - 1), Math.floor(nFix(next.currentIndex, next.completed))));
+    next.active = false;
+    next.cycleClosed = next.completed >= target;
+    next.bestCycle = Math.max(1, Math.floor(nFix(next.bestCycle, next.cycle)));
+    next.bestCompleted = Math.max(0, Math.floor(nFix(next.bestCompleted, next.completed)));
+    next.bestCycle = Math.max(next.bestCycle, next.cycle);
+    next.bestCompleted = Math.max(next.bestCompleted, next.completed);
+    next.history = Array.isArray(next.history) ? next.history.slice(0, 24) : [];
+    next.withdrawals = Array.isArray(next.withdrawals) ? next.withdrawals.slice(0, 30) : [];
+    next.withdrawProfile = next.withdrawProfile && typeof next.withdrawProfile === 'object' ? next.withdrawProfile : {};
+    window.demoState = next;
+    return next;
+  };
+
+  window.getVipRankInfo = function(){
+    var cycle = (typeof getDemoCycle === 'function') ? getDemoCycle() : currentCycleFix(window.demoState);
+    var plan = currentPlanFix(cycle);
+    var target = targetForCycleFix(cycle);
+    var hidden = false;
+    try { hidden = typeof shouldHideAccountData === 'function' && shouldHideAccountData(); } catch(e){}
+    var completed = hidden ? 0 : Math.max(0, Math.min(target, Math.floor(nFix(demoState && demoState.completed, 0))));
+    var rankSteps = [
+      {min:1, max:1, name:'Clasificacion Bronce', icon:'III', badge:'VIP1'},
+      {min:2, max:2, name:'Clasificacion Plata', icon:'II', badge:'VIP2'},
+      {min:3, max:3, name:'Clasificacion Oro', icon:'I', badge:'VIP3'},
+      {min:4, max:4, name:'Clasificacion Platino', icon:'◆', badge:'VIP4'},
+      {min:5, max:999, name:'Clasificacion Diamante', icon:'★', badge:'VIP' + cycle}
+    ];
+    var rank = rankSteps.find(function(item){ return cycle >= item.min && cycle <= item.max; }) || rankSteps[rankSteps.length - 1];
+    var nextPlan = currentPlanFix(cycle + 1);
+    var bestCycle = hidden ? 1 : Math.max(1, Math.floor(nFix(demoState && demoState.bestCycle, cycle)));
+    var bestCompleted = hidden ? 0 : Math.max(0, Math.floor(nFix(demoState && demoState.bestCompleted, completed)));
+    return {
+      cycle:cycle,
+      completed:completed,
+      target:target,
+      rank:rank,
+      plan:plan,
+      nextPlan:nextPlan,
+      currentGain:Number(plan.gain || plan.rewardTotal || 0),
+      nextGain:Number(nextPlan.gain || nextPlan.rewardTotal || 0),
+      progressPercent:Math.min(100, Math.max(0, completed / target * 100)),
+      bestCycle:bestCycle,
+      bestCompleted:bestCompleted
+    };
+  };
+
+  window.getTaskGainList = function(cycle){
+    cycle = cycle || ((typeof getDemoCycle === 'function') ? getDemoCycle() : currentCycleFix(demoState));
+    var plan = currentPlanFix(cycle);
+    var count = targetForCycleFix(cycle);
+    var total = Number(plan.gain || plan.rewardTotal || 0);
+    var each = Number((total / count).toFixed(2));
+    var list = [], used = 0;
+    for(var i = 0; i < count - 1; i++){ list.push(each); used += each; }
+    list.push(Number((total - used).toFixed(2)));
+    return list;
+  };
+
+  window.getMissionGain = function(){
+    var cycle = (typeof getDemoCycle === 'function') ? getDemoCycle() : currentCycleFix(demoState);
+    var target = targetForCycleFix(cycle);
+    var index = Math.max(0, Math.min(target - 1, Math.floor(nFix(demoState && demoState.currentIndex, demoState && demoState.completed || 0))));
+    var gains = window.getTaskGainList(cycle);
+    return Number((gains[index] || gains[0] || 0).toFixed(2));
+  };
+
+  window.buildDemoMission = function(){
+    var cycle = (typeof getDemoCycle === 'function') ? getDemoCycle() : currentCycleFix(demoState);
+    var plan = currentPlanFix(cycle);
+    var target = targetForCycleFix(cycle);
+    var index = Math.max(0, Math.min(target - 1, Math.floor(nFix(demoState && demoState.currentIndex, demoState && demoState.completed || 0))));
+    var base = (Array.isArray(window.demoMissions) ? window.demoMissions[index % window.demoMissions.length] : null) ||
+      (typeof demoMissions !== 'undefined' && Array.isArray(demoMissions) ? demoMissions[index % demoMissions.length] : null) ||
+      {title:'Tarea VIP', image:''};
+    var prices = [];
+    try { prices = Array.isArray(plan.taskPrices) ? plan.taskPrices : []; } catch(e){}
+    if(!prices.length && window.adminTaskPricesForVipV90){
+      try { prices = window.adminTaskPricesForVipV90(window.vipSettingsV62 || {}, cycle) || []; } catch(e){}
+    }
+    var cost = Number(prices[index] || prices[0] || plan.recharge || plan.rechargeRequired || 0);
+    return Object.assign({}, base, {
+      cost:cost,
+      bonus:window.getMissionGain(),
+      requiredRecharge:cost,
+      gainRange:[Number(plan.gain || 0), Number(plan.gain || 0)],
+      taskNumber:index + 1,
+      taskCount:target
+    });
+  };
+  window.getDemoMission = function(){ return window.buildDemoMission(); };
+
+  window.renderVipProgressCard = function(){
+    var info = window.getVipRankInfo();
+    var set = function(id, v){ var el = document.getElementById(id); if(el) el.textContent = v; };
+    var fill = document.getElementById('introRankProgressFill');
+    var card = document.getElementById('introRankCard');
+    if(card) card.classList.toggle('rank-complete', info.completed >= info.target);
+    if(fill) fill.style.width = info.progressPercent + '%';
+    set('introRankIcon', info.rank.icon);
+    set('introRankBadge', info.rank.badge);
+    set('introRankName', info.rank.name);
+    set('introRankMotivation', info.completed >= info.target ? 'Ronda lista. Puedes retirar.' : 'VIP' + info.cycle + ' tiene ' + info.target + ' tareas. Faltan ' + Math.max(0, info.target - info.completed) + '.');
+    set('introRankProgressText', info.completed + ' de ' + info.target + ' tareas completadas');
+    set('introRankCycle', 'Ronda ' + info.cycle);
+    set('introRankCurrent', moneyFix(info.currentGain));
+    set('introRankNext', moneyFix(info.nextGain));
+    set('introRankRecord', 'VIP' + info.bestCycle + ' · ' + info.bestCompleted + '/' + info.target);
+  };
+
+  window.renderBalanceScreen = function(){
+    var info = window.getVipRankInfo();
+    var total = (typeof getDemoTotal === 'function') ? getDemoTotal() : Number(demoState && demoState.wallet || 0);
+    var withdrawable = (typeof getWithdrawAvailable === 'function') ? getWithdrawAvailable() : total;
+    var map = {
+      saldoScreenTotal: moneyFix(total),
+      saldoScreenVip: info.rank.badge + ' · Ronda ' + info.cycle,
+      saldoScreenWithdrawable: moneyFix(withdrawable),
+      saldoScreenReward: moneyFix(demoState && demoState.rewardToday || 0),
+      saldoScreenFrozen: moneyFix(demoState && demoState.frozen || 0),
+      saldoScreenOrders: info.completed + ' / ' + info.target
+    };
+    Object.keys(map).forEach(function(id){ var el = document.getElementById(id); if(el) el.textContent = map[id]; });
+  };
+
+  window.renderRankScreen = function(){
+    var info = window.getVipRankInfo();
+    var missing = Math.max(0, info.target - info.completed);
+    var ids = {
+      rankScreenIcon: info.rank.icon,
+      rankScreenName: info.rank.name,
+      rankScreenBadge: info.rank.badge,
+      rankScreenProgressText: info.completed + ' de ' + info.target + ' tareas',
+      rankScreenRound: 'Ronda ' + info.cycle,
+      rankScreenCurrentGain: moneyFix(info.currentGain),
+      rankScreenNextGain: moneyFix(info.nextGain),
+      rankScreenRecord: 'VIP' + info.bestCycle + ' · ' + info.bestCompleted + '/' + info.target,
+      rankScreenMissing: missing === 0 ? 'Listo para retiro' : (missing + ' tareas')
+    };
+    Object.keys(ids).forEach(function(id){ var el = document.getElementById(id); if(el) el.textContent = ids[id]; });
+    var fill = document.getElementById('rankScreenProgressFill');
+    if(fill) fill.style.width = info.progressPercent + '%';
+  };
+
+  var oldProfileFix = window.renderProfileDashboard;
+  window.renderProfileDashboard = function(){
+    if(typeof oldProfileFix === 'function') oldProfileFix();
+    var info = window.getVipRankInfo();
+    var sub = document.getElementById('profileBalanceSubV33');
+    if(sub) sub.textContent = info.completed + '/' + info.target + ' tareas · ' + String(info.rank.name || '').replace('Clasificacion ', '').replace('Clasificación ', '');
+    var planMeta = document.getElementById('profileCurrentPlanMetaV65');
+    if(planMeta) planMeta.textContent = 'recarga ' + moneyFix(info.plan.recharge || info.plan.rechargeRequired || 0) + ' · gana ' + moneyFix(info.currentGain) + ' · ' + info.target + ' tareas';
+  };
+
+  window.demoTaskAction = function(){
+    demoState = window.normalizeDemoState(demoState);
+    var info = window.getVipRankInfo();
+    if(demoState.completed >= info.target){
+      showToast('Ya completaste ' + info.target + ' de ' + info.target + '. Retiro habilitado.');
+      return;
+    }
+    var mission = window.getDemoMission();
+    if(mission && Number(demoState.wallet || 0) < Number(mission.cost || 0)){
+      openRechargeRequest();
+      return;
+    }
+    openDemoOrderModal('accept');
+  };
+
+  window.completeDemoMission = function(){
+    demoState = window.normalizeDemoState(demoState);
+    var mission = window.getDemoMission();
+    if(!mission) return;
+    var info = window.getVipRankInfo();
+    if(Number(demoState.wallet || 0) < Number(mission.cost || 0)){
+      showToast('Saldo insuficiente. Recarga para continuar.');
+      return;
+    }
+    var before = Number(demoState.wallet || 0);
+    var bonus = Number(mission.bonus || 0);
+    demoState.wallet = Number((before + bonus).toFixed(2));
+    demoState.rewardToday = Number((Number(demoState.rewardToday || 0) + bonus).toFixed(2));
+    demoState.withdrawable = Number((Number(demoState.withdrawable || 0) + bonus).toFixed(2));
+    demoState.lastCost = Number(mission.cost || 0);
+    demoState.frozen = 0;
+    demoState.active = false;
+    demoState.completed = Math.min(info.target, Math.floor(nFix(demoState.completed, 0)) + 1);
+    demoState.bestCompleted = Math.max(demoState.bestCompleted || 0, demoState.completed);
+    demoState.bestCycle = Math.max(demoState.bestCycle || 1, info.cycle);
+    demoState.currentIndex = Math.min(demoState.completed, info.target - 1);
+    var completedNow = demoState.completed >= info.target;
+    demoState.cycleClosed = completedNow;
+    addDemoHistory(
+      completedNow ? 'complete' : 'purchase',
+      completedNow ? 'Ronda completada' : 'Compra completada',
+      mission.title + ' · tarea ' + demoState.completed + '/' + info.target + ' · saldo ' + moneyFix(before) + ' -> ' + moneyFix(demoState.wallet),
+      bonus,
+      {product:mission.title, image:mission.image, total:mission.cost, commission:bonus, status:'completed', taskNumber:demoState.completed, taskCount:info.target}
+    );
+    if(window.TiendaFirebaseBridge && typeof window.TiendaFirebaseBridge.recordMissionOrder === 'function'){
+      window.TiendaFirebaseBridge.recordMissionOrder(mission, demoState);
+    }
+    saveDemoState();
+    try { renderIntroScreen(); updateHomeDemoCards(); animateBalance(); } catch(e){}
+    showToast(completedNow ? ('Completaste ' + info.target + ' de ' + info.target + '. Ganancia: ' + moneyFix(info.currentGain)) : ('Compra completada + ' + moneyFix(bonus)));
+  };
+
+  window.openWithdrawRequest = function(){
+    demoState = window.normalizeDemoState(demoState);
+    var info = window.getVipRankInfo();
+    if(demoState.completed < info.target){
+      showToast('Completa las ' + info.target + ' tareas para habilitar retiro');
+      return;
+    }
+    if(typeof getWithdrawAvailable === 'function' && getWithdrawAvailable() <= 0){
+      showToast('No hay saldo disponible para retirar');
+      return;
+    }
+    backScreen = activeScreen || 'introduccion';
+    openScreen('retirar');
+  };
+
+  window.confirmDemoWithdrawal = function(){
+    demoState = window.normalizeDemoState(demoState);
+    var info = window.getVipRankInfo();
+    if(demoState.completed < info.target){
+      showToast('Completa las ' + info.target + ' tareas para habilitar retiro');
+      return;
+    }
+    var available = (typeof getWithdrawAvailable === 'function') ? getWithdrawAvailable() : Number(demoState.wallet || 0);
+    var amount = Number(readWithdrawAmount().toFixed(2));
+    if(amount <= 0){ showToast('Ingresa una cantidad para retirar'); return; }
+    if(amount > available){ showToast('La cantidad supera tu saldo disponible'); return; }
+    var method = readWithdrawMethod();
+    var missing = getWithdrawMethodMissing(method);
+    if(missing.length){ showToast('Completa: ' + missing.join(', ')); renderWithdrawPreview(); return; }
+    openWithdrawConfirmDialog(amount, method);
+  };
+
+  window.submitDemoWithdrawal = function(){
+    if(!pendingWithdrawal){ closeWithdrawConfirm(); return; }
+    demoState = window.normalizeDemoState(demoState);
+    var info = window.getVipRankInfo();
+    var amount = Number((pendingWithdrawal.amount || 0).toFixed(2));
+    var method = pendingWithdrawal.method || readWithdrawMethod();
+    var available = (typeof getWithdrawAvailable === 'function') ? getWithdrawAvailable() : Number(demoState.wallet || 0);
+    if(demoState.completed < info.target || amount <= 0 || amount > available){
+      showToast('Revisa el monto disponible');
+      closeWithdrawConfirm();
+      return;
+    }
+    var finishedCycle = pendingWithdrawal.cycle || info.cycle;
+    demoState.wallet = Number((demoState.wallet - amount).toFixed(2));
+    demoState.frozen = 0;
+    demoState.rewardToday = 0;
+    demoState.withdrawable = 0;
+    demoState.completed = 0;
+    demoState.currentIndex = 0;
+    demoState.lastCost = 16;
+    demoState.active = false;
+    demoState.cycleClosed = false;
+    demoState.cycle = finishedCycle + 1;
+    demoState.bestCycle = Math.max(demoState.bestCycle || 1, demoState.cycle);
+    demoState.bestCompleted = Math.max(demoState.bestCompleted || 0, info.target);
+    demoState.withdrawProfile = method;
+    var withdrawalRecord = addWithdrawalRecord(amount, finishedCycle, method);
+    if(window.TiendaFirebaseBridge && typeof window.TiendaFirebaseBridge.recordWithdrawal === 'function'){
+      window.TiendaFirebaseBridge.recordWithdrawal(withdrawalRecord, demoState);
+    }
+    addDemoHistory('withdraw', 'Solicitud de retiro', 'Retiro de ' + moneyFix(amount) + ' · ' + getWithdrawMethodLabel(method) + ' · revision 15 a 30 min', -amount, {status:'processing'});
+    pendingWithdrawal = null;
+    closeWithdrawConfirm();
+    saveDemoState();
+    try { renderIntroScreen(); renderWithdrawScreen(); renderWithdrawalHistoryScreen(); renderProfileDashboard(); } catch(e){}
+    showToast('Solicitud de retiro registrada');
+  };
+
+  try {
+    if(typeof demoState !== 'undefined'){
+      demoState = window.normalizeDemoState(demoState);
+      window.demoState = demoState;
+      if(typeof saveDemoState === 'function') saveDemoState();
+    }
+    if(typeof renderIntroScreen === 'function') renderIntroScreen();
+  } catch(e){ console.warn('No se pudo refrescar tareas dinamicas v93', e); }
+})();
+</script>
+<!-- FIX_TAREAS_DINAMICAS_NO_SE_TRABA_V93_END -->
+
 </body>
 </html>
